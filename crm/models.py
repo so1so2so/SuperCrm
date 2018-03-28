@@ -23,16 +23,16 @@ class Customer(models.Model):
     # SmallIntegerField 小整数
     source = models.SmallIntegerField(choices=source_choices)
     referral_from = models.CharField(verbose_name="转介绍人qq", max_length=64, blank=True, null=True)
-    consult_course = models.ForeignKey("Course", verbose_name="咨询课程")
     content = models.TextField(verbose_name="咨询详情")
-    tags = models.ManyToManyField("Tag", blank=True,verbose_name="标签")
     status_choices = ((0, '已报名'),
                       (1, '未报名'),
                       )
     status = models.SmallIntegerField(choices=status_choices, default=1)
-    consultant = models.ForeignKey("UserProfile")
-    memo = models.TextField(blank=True, null=True,verbose_name="备注")
+    memo = models.TextField(blank=True, null=True, verbose_name="备注")
     date = models.DateTimeField(auto_now_add=True)
+    consult_course = models.ForeignKey("Course", verbose_name="咨询课程")
+    consultant = models.ForeignKey("UserProfile", verbose_name="客户")
+    tags = models.ManyToManyField("Tag", blank=True, verbose_name="标签")
 
     def __unicode__(self):
         return self.name
@@ -43,9 +43,9 @@ class Customer(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(unique=True, max_length=32)
+    name = models.CharField(unique=True, max_length=32, verbose_name="标签名")
 
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
     class Meta:
@@ -55,10 +55,7 @@ class Tag(models.Model):
 
 class CustomerFollowUp(models.Model):
     """客户跟进表"""
-    customer = models.ForeignKey("Customer")
     content = models.TextField(verbose_name="跟进内容")
-    consultant = models.ForeignKey("UserProfile")
-
     intention_choices = ((0, '2周内报名'),
                          (1, '1个月内报名'),
                          (2, '近期无报名计划'),
@@ -68,6 +65,8 @@ class CustomerFollowUp(models.Model):
                          )
     intention = models.SmallIntegerField(choices=intention_choices)
     date = models.DateTimeField(auto_now_add=True)
+    consultant = models.ForeignKey("UserProfile", verbose_name="账号")
+    customer = models.ForeignKey("Customer", verbose_name="客户")
 
     def __unicode__(self):
         return "<%s : %s>" % (self.customer.qq, self.intention)
@@ -82,7 +81,7 @@ class Course(models.Model):
     name = models.CharField(max_length=64, unique=True)
     price = models.PositiveSmallIntegerField(verbose_name="课程")
     period = models.PositiveSmallIntegerField(verbose_name="周期(月)")
-    outline = models.TextField()
+    outline = models.TextField(verbose_name="大纲")
 
     def __unicode__(self):
         return self.name
@@ -94,8 +93,8 @@ class Course(models.Model):
 
 class Branch(models.Model):
     """校区"""
-    name = models.CharField(max_length=128, unique=True)
-    addr = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, unique=True, verbose_name="校区名称")
+    addr = models.CharField(max_length=128, verbose_name="校区地址")
 
     def __unicode__(self):
         return self.name
@@ -107,22 +106,23 @@ class Branch(models.Model):
 
 class ClassList(models.Model):
     """班级表"""
-    branch = models.ForeignKey("Branch", verbose_name="校区")
-    course = models.ForeignKey("Course")
     class_type_choices = ((0, '面授(脱产)'),
                           (1, '面授(周末)'),
                           (2, '网络班')
                           )
     class_type = models.SmallIntegerField(choices=class_type_choices, verbose_name="班级类型")
     semester = models.PositiveSmallIntegerField(verbose_name="学期")
-    teachers = models.ManyToManyField("UserProfile")
     start_date = models.DateField(verbose_name="开班日期")
     end_date = models.DateField(verbose_name="结业日期", blank=True, null=True)
+    branch = models.ForeignKey("Branch", verbose_name="校区")
+    course = models.ForeignKey("Course")
+    teachers = models.ManyToManyField("UserProfile")
 
     def __unicode__(self):
         return "%s %s %s" % (self.branch, self.course, self.semester)
 
     class Meta:
+        # 联合唯一
         unique_together = ('branch', 'course', 'semester')
         verbose_name_plural = "班级"
         verbose_name = "班级"
@@ -130,14 +130,14 @@ class ClassList(models.Model):
 
 class CourseRecord(models.Model):
     """上课记录"""
-    from_class = models.ForeignKey("ClassList", verbose_name="班级")
     day_num = models.PositiveSmallIntegerField(verbose_name="第几节(天)")
-    teacher = models.ForeignKey("UserProfile")
     has_homework = models.BooleanField(default=True)
     homework_title = models.CharField(max_length=128, blank=True, null=True)
     homework_content = models.TextField(blank=True, null=True)
     outline = models.TextField(verbose_name="本节课程大纲")
     date = models.DateField(auto_now_add=True)
+    teacher = models.ForeignKey("UserProfile", verbose_name="上课老师")
+    from_class = models.ForeignKey("ClassList", verbose_name="班级")
 
     def __unicode__(self):
         return "%s %s" % (self.from_class, self.day_num)
@@ -149,14 +149,12 @@ class CourseRecord(models.Model):
 
 class StudyRecord(models.Model):
     """学习记录"""
-    student = models.ForeignKey("Enrollment")
-    course_record = models.ForeignKey("CourseRecord")
     attendance_choices = ((0, '已签到'),
                           (1, '迟到'),
                           (2, '缺勤'),
                           (3, '早退'),
                           )
-    attendance = models.SmallIntegerField(choices=attendance_choices, default=0)
+    attendance = models.SmallIntegerField(choices=attendance_choices, default=0, verbose_name="出勤状态")
     score_choices = ((100, "A+"),
                      (90, "A"),
                      (85, "B+"),
@@ -169,9 +167,11 @@ class StudyRecord(models.Model):
                      (-100, "COPY"),
                      (0, "N/A"),
                      )
-    score = models.SmallIntegerField(choices=score_choices, default=0)
+    score = models.SmallIntegerField(choices=score_choices, default=0, verbose_name="分数")
     memo = models.TextField(blank=True, null=True)
     date = models.DateField(auto_now_add=True)
+    course_record = models.ForeignKey("CourseRecord", verbose_name="上课记录")
+    student = models.ForeignKey("Enrollment")
 
     def __unicode__(self):
         return "%s %s %s" % (self.student, self.course_record, self.score)
@@ -222,6 +222,9 @@ class UserProfile(models.Model):
     def __unicode__(self):
         return self.name
 
+    class Meta:
+        verbose_name_plural = "用户"
+
 
 class Role(models.Model):
     """角色表"""
@@ -242,3 +245,7 @@ class Menu(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    class Meta:
+        verbose_name_plural = "菜单"
+        verbose_name = "菜单"
