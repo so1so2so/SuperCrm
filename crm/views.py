@@ -16,8 +16,7 @@ def customer(request):
     return render(request, "customers/customer.html")
 
 
-def students(request):
-    return render(request, "students/students.html")
+
 
 
 def teacher(request):
