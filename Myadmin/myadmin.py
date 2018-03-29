@@ -36,7 +36,9 @@ def register(model_obj, admin_class=None):
         # d = {"crm": {}}
     # 给admin_class这个类绑定一个属性,当前有list_display属性类似 只不过这个属性是一个model对象 model= models.Customer
     # 就可以用admin_class.model.object.all 拿到这model的值了
-    admin_class.model=model_obj
+    admin_obj=admin_class()
+    admin_obj.model=model_obj
+    # admin_class.model=model_obj
     enable_admins[app_name][table_name] = admin_class
 register(model_obj=models.Customer,admin_class=CusterAdmin)
 register(model_obj=models.UserProfile,admin_class=UserProfileAdmin)
