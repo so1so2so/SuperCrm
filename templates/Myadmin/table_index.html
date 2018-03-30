@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load get_table_rela_name %}
+
+{% block body %}
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">CRM</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+
+                <li><a href="#">{{ request.user.username }}</a></li>
+            </ul>
+
+        </div>
+    </div>
+</nav>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                {#      {'crm': {'customer': <class 'Myadmin.myadmin.CusterAdmin'>, 'userprofile': <class 'Myadmin.myadmin.UserProfileAdmin'>}}#}
+                {% for app_name,table_obj in obj_all.items %}
+                    <a>{{ app_name }}</a>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <h2 class="sub-header">Section title</h2>
+            <div class="bs-example" data-example-id="table-within-panel">
+                    <div class="panel panel-default">
+                        <!-- Default panel contents -->
+                        <div class="panel-heading">选择{{ 1 }}来修改</div>
+                        <div class="panel-body" style="background-color: #2d6987 ">
+                            {% for app_name,table_obj_all in obj_all.items %}
+                                <a href="{% url "show_app" app_name %}" style="color: #fff">{{ app_name }}</a>
+                                </div>
+                                <!-- Table -->
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>表名</th>
+                                        {#                                            <th>Last Name</th>#}
+                                        {#                                            <th>Username</th>#}
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        {% for  table_name,table_obj in table_obj_all.items %}
+                                            <td>
+                                                <a href="{% url 'show_table' app_name table_name %}">{% get_rela_name table_obj %}</a>
+                                            </td>
+                                            <td><a href="{% url 'table_add' app_name table_name %}">+添加</a></td>
+                                            <td><a href="{% url 'table_edit' app_name table_name %}">-修改</a></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                </div>
+                                </div>
+
+                            {% endfor %}
+                    </div>
+                    </div>
+                    </div>
+                    </body>
+                {% endblock %}
