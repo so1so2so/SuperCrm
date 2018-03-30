@@ -30,4 +30,13 @@ def table_edit(request, app_name, table_name):
 
 
 def show_table(request, app_name, table_name):
-    return render(request,"Myadmin/show_table.html")
+    obj_all = myadmin.enable_admins
+
+    for i in myadmin.enable_admins.itervalues():
+        for obj_model in i.itervalues():
+            allmodel=obj_model.model.objects.all()
+            print "---------------"
+            all_key =obj_model.__dict__
+            if dict(all_key).has_key("list_display"):
+                print all_key["list_display"]
+    return render(request,"Myadmin/show_table.html",{"obj_all": obj_all})
