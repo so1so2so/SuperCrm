@@ -19,4 +19,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^crm/', include("crm.urls")),
     url(r'^students/', include("students.urls")),
+    url(r'^Myadmin/', include("Myadmin.urls")),
 ]
