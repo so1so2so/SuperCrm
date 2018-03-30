@@ -19,7 +19,6 @@ def customer(request):
     # print models.Customer._meta.verbose_name
     return render(request, "customers/customer.html")
 
-
 def teacher(request):
     return render(request, "teacher/teachers.html")
 
