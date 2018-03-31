@@ -38,8 +38,8 @@ class Customer(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = "客户表"
-        verbose_name_plural = "客户表"
+        verbose_name = "客户表(学生)"
+        verbose_name_plural = "客户表(学生)"
 
 
 class Tag(models.Model):
@@ -223,7 +223,7 @@ class UserProfile(models.Model):
         return self.name
 
     class Meta:
-        verbose_name_plural = "用户"
+        verbose_name_plural = "系统用户"
 
 
 class Role(models.Model):
