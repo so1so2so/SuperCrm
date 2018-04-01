@@ -31,7 +31,7 @@ class Customer(models.Model):
     memo = models.TextField(blank=True, null=True, verbose_name="备注")
     date = models.DateTimeField(auto_now_add=True)
     consult_course = models.ForeignKey("Course", verbose_name="咨询课程")
-    consultant = models.ForeignKey("UserProfile", verbose_name="客户")
+    consultant = models.ForeignKey("UserProfile", verbose_name="客户经理")
     tags = models.ManyToManyField("Tag", blank=True, verbose_name="标签")
 
     def __unicode__(self):

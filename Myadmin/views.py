@@ -2,8 +2,7 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import render, HttpResponse
-from crm import models
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from Myadmin import myadmin
 
 d_2 = {"crm": {"userprofile": "admin_class"}}
@@ -11,10 +10,18 @@ d_2 = {"crm": {"userprofile": "admin_class"}}
 
 # Create your views here.
 def index(request):
-    # print models.Customer._meta.verbose_name
-    d= ('id', 'qq', 'name', 'source', 'consultant', 'content', 'status', 'date')
-    d = models.Customer.objects.all().values_list(*d)
-    print d
+    # for i in range(100):
+    #
+    #     models.Customer.objects.create(
+    #         qq="103793045"+str(i),
+    #         name="张"+str(i)+ "帅",
+    #         source=5,
+    #         content="没戏了",
+    #         status=0,
+    #         consult_course=models.Course.objects.get(id=1),
+    #         consultant=models.UserProfile.objects.get(id=1),
+    #         # tags=1,
+    #     )
     obj_all = myadmin.enable_admins
     return render(request, "Myadmin/table_index.html", {"obj_all": obj_all})
 
@@ -27,35 +34,42 @@ def table_add(request, app_name, table_name):
     return HttpResponse("table_add")
 
 
-def table_edit(request, app_name, table_name,table_id):
+def table_edit(request, app_name, table_name, table_id):
     return HttpResponse("edit")
+
+def table_filter(request,admin_class):
+    '''进行条件过滤并返回过滤后的数据'''
+    filter_conditions = {}
+    # print request.GET.items()
+    for k,v in request.GET.items():
+        if v:
+            filter_conditions[k] =v
+    # print admin_class.model.objects.filter(**filter_conditions),filter_conditions
+    print filter_conditions
+    return admin_class.model.objects.filter(**filter_conditions),filter_conditions
 
 
 def show_table(request, app_name, table_name):
-    obj_all = myadmin.enable_admins[app_name][table_name]
-    # print obj_all.list_display
-    # print type(obj_all.list_display)
-    this_obj=obj_all.model.objects.all()
-    if dict(obj_all.__dict__).has_key("list_display"):
-        list_filed= obj_all.__dict__["list_display"]
-        this_obj=obj_all.model.objects.values_list(*list_filed)
+    obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
+    all_obj_django=obj_all_model_and_display.model.objects.all()
+    # if dict(obj_all.__dict__).has_key("list_display"):
+    #     list_filed = obj_all.__dict__["list_display"]
+    #     for filed in list_filed:
+    #         check_choise = obj_all.model._meta.get_field(filed)
+    #         # print check_choise
+    #         if check_choise.choices:
+    #             print check_choise.choices
+    #     this_obj = obj_all.model.objects.values_list(*list_filed)
+    # object_list, filter_condtions = table_filter(request, obj_all_model_and_display)
+    paginator = Paginator(all_obj_django, obj_all_model_and_display.list_per_page)  # Show 25 contacts per page
 
-    # print this_obj
-    for i in this_obj:
-        for j in i:
-            print j
-
-
-
-    # for i in range(len(obj_all.list_display)):
-    #     # print i
-    #     shot = obj_all.list_display[i]
-    #     # print shot
-    #     rela_row_dat=[]
-    #     for j in this_obj:
-    #         # print j[shot]
-    #         pass
-    #     rela_row_dat.append(j[shot])
-    # rela_row_dat_all.append(rela_row_dat)
-    # print rela_row_dat_all
-    return render(request,"Myadmin/show_table.html",locals())
+    page = request.GET.get('page')
+    try:
+        query_sets = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        query_sets = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        query_sets = paginator.page(paginator.num_pages)
+    return render(request, "Myadmin/show_table.html", locals())

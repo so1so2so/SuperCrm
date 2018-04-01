@@ -8,15 +8,16 @@ enable_admins = {}
 class BaseAdmin(object):
     list_display = []
     list_filter = []
-
+    list_per_page=20
 
 class UserProfileAdmin(BaseAdmin):
-    list_display = ["user","name","roles"]
+    list_display = ["id","name","roles"]
 
 
 class CusterAdmin(BaseAdmin):
     # list_display = ["qq", "name"]
-    list_display = ['id', 'qq', 'name', 'source', 'consultant', 'content', 'status', 'date']
+    list_display = ['id', 'qq', 'name', 'source', 'content', 'status', 'date','tags']
+    list_filter = ['qq',"name"]
 
     # model= models.Customer
 class ClassListAdmin(BaseAdmin):
