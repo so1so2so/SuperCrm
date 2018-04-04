@@ -17,18 +17,21 @@ def get_rela_name(table_obj):
 
 
 @register.simple_tag
-def build_table_row(this_obj_django, obj_all_model_and_display):
+def build_table_row(one_obj_django, obj_all_model_and_display):
     row_ele = ""
     for column in obj_all_model_and_display.list_display:
-        field_obj = this_obj_django._meta.get_field(column)
+        field_obj = one_obj_django._meta.get_field(column)
         if field_obj.choices:  # choices type
-            column_data = getattr(this_obj_django, "get_%s_display" % column)()
+            column_data = getattr(one_obj_django, "get_%s_display" % column)()
         else:
-            column_data = getattr(this_obj_django, column)
+            column_data = getattr(one_obj_django, column)
         if type(column_data).__name__ == 'datetime':
             column_data = column_data.strftime("%Y-%m-%d %H:%M:%S")
         if type(field_obj).__name__ == "ManyToManyField":
-            column_data=column_data
+            all_date=getattr(field_obj,'get_choices')()[1:]
+            for choice_item in all_date:
+                if str(choice_item[0])==one_obj_django:
+                    pass
         row_ele += "<td>%s</td>" % column_data
     # print row_ele
     return mark_safe(row_ele)
