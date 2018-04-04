@@ -31,15 +31,15 @@ class Customer(models.Model):
     memo = models.TextField(blank=True, null=True, verbose_name="备注")
     date = models.DateTimeField(auto_now_add=True)
     consult_course = models.ForeignKey("Course", verbose_name="咨询课程")
-    consultant = models.ForeignKey("UserProfile", verbose_name="客户")
+    consultant = models.ForeignKey("UserProfile", verbose_name="客户经理")
     tags = models.ManyToManyField("Tag", blank=True, verbose_name="标签")
 
     def __unicode__(self):
         return self.name
 
     class Meta:
-        verbose_name = "客户表"
-        verbose_name_plural = "客户表"
+        verbose_name = "客户表(学生)"
+        verbose_name_plural = "客户表(学生)"
 
 
 class Tag(models.Model):
@@ -223,7 +223,7 @@ class UserProfile(models.Model):
         return self.name
 
     class Meta:
-        verbose_name_plural = "用户"
+        verbose_name_plural = "系统用户"
 
 
 class Role(models.Model):

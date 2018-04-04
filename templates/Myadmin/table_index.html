@@ -60,7 +60,7 @@
                                                 <a href="{% url 'show_table' app_name table_name %}">{% get_rela_name table_obj %}</a>
                                             </td>
                                             <td><a href="{% url 'table_add' app_name table_name %}">+添加</a></td>
-                                            <td><a href="{% url 'table_edit' app_name table_name %}">-修改</a></td>
+                                            <td><a href="{% url 'table_edit' app_name table_name 1 %}">-修改</a></td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>

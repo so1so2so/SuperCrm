@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load get_table_rela_name %}
 {% block body %}
     <body>
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -33,27 +34,63 @@
             <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
                 <h1 class="page-header">添加数据</h1>
                 <h2 class="sub-header">标题</h2>
+                <div class="row">
+                    <form class="" method="get">
+                        {% for condtion in obj_all_model_and_display.list_filters %}
+                            <div class="col-lg-2">
+                                <span>{{ condtion }}</span>
+                                {% render_filter_ele condtion obj_all_model_and_display filter_condtions %}
+                            </div>
+                        {% endfor %}
+                        <button type="SUBMIT" class="btn btn-success">检索</button>
+                    </form>
+
+                </div>
                 <div class="bs-example" data-example-id="table-within-panel">
                     <div class="panel panel-default">
                         <!-- Default panel contents -->
-                        <div class="panel-heading">选择1来修改</div>
+                        <div class="panel-heading">选择{{ table_name }}来修改</div>
                         <div class="panel-body" style="background-color: #2d6987 ">
 
-                            <a href="/Myadmin/crm" style="color: #fff">crm</a>
+                            <a href="/Myadmin/crm" style="color: #fff">{% get_rela_name obj_all_model_and_display %}</a>
                         </div>
-                        <!-- Table -->
                         <table class="table">
                             <thead>
-                            <tr><th>列名称</th></tr>
+                            <tr>
+                                {% for column in obj_all_model_and_display.list_display %}
+                                    <th>{{ column }}</th>
+                                {% endfor %}
+                            </tr>
                             </thead>
                             <tbody>
-                            <tr>
-                                <td><a href="/Myadmin/crm/customer">客户表</a></td>
-                                <td><a href="/Myadmin/crm/customer/add/">+添加</a></td>
-                                <td><a href="/Myadmin/crm/customer/change/">-修改</a></td>
-                            </tr>
+                            {% for one_obj_django in query_sets %}
+                                <tr>
+                                    {% build_table_row one_obj_django obj_all_model_and_display %}
+                                </tr>
+                            {% endfor %}
                             </tbody>
                         </table>
+                        <nav>
+                            <ul class="pagination">
+                                {% if query_sets.has_previous %}
+                                    <li class=""><a href="?page={{ query_sets.previous_page_number }}">上页</a></li>
+                                {% endif %}
+                                {#                   <li class="active"><a>{{ query_sets.number }}</a></li>#}
+
+                                {% for loop_counter in query_sets.paginator.page_range %}
+                                    {% render_page_ele loop_counter query_sets %}
+                                {% endfor %}
+
+                                {% if query_sets.has_next %}
+                                    <li class=""><a href="?page={{ query_sets.next_page_number }}">下页</a></li>
+                                {% endif %}
+
+
+                                {#                <li class="disabled"><a href="#">&laquo;</a></li>#}
+                                {#                <li class="active"><a href="#">1 <span class="sr-only">(current)</span></a></li>#}
+                                {#                #}
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
