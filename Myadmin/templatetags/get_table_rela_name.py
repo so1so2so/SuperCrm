@@ -17,9 +17,9 @@ def get_rela_name(table_obj):
 
 
 @register.simple_tag
-def build_table_row(one_obj_django, obj_all_model_and_display):
+def build_table_row(request,one_obj_django, obj_all_model_and_display):
     row_ele = ""
-    for column in obj_all_model_and_display.list_display:
+    for index,column in enumerate(obj_all_model_and_display.list_display):
         field_obj = one_obj_django._meta.get_field(column)
         if field_obj.choices:  # choices type
             column_data = getattr(one_obj_django, "get_%s_display" % column)()
@@ -28,22 +28,42 @@ def build_table_row(one_obj_django, obj_all_model_and_display):
         if type(column_data).__name__ == 'datetime':
             column_data = column_data.strftime("%Y-%m-%d %H:%M:%S")
         if type(field_obj).__name__ == "ManyToManyField":
-            all_date=getattr(field_obj,'get_choices')()[1:]
+            all_date = getattr(field_obj, 'get_choices')()[1:]
             for choice_item in all_date:
-                if str(choice_item[0])==one_obj_django:
+                if str(choice_item[0]) == one_obj_django:
                     pass
+        if index==0: #add <a></a> tag
+            column_data= "<a href='{request_path}/{obj_id}/change'>{date}</a>".format(
+                request_path=request.path,
+                obj_id=one_obj_django.id,
+                date=column_data,
+            )
         row_ele += "<td>%s</td>" % column_data
     # print row_ele
     return mark_safe(row_ele)
 
 
 @register.simple_tag
-def render_page_ele(loop_counter, query_sets):
+def render_page_ele(loop_counter, query_sets, filter_condtions,order,search):
+    filters = ''
+    for k, v in filter_condtions.items():
+        filters += "&%s=%s" % (k, v)
+    if not order:
+        order=''
+    if not search:
+        search=''
+    if loop_counter < 3 or loop_counter > query_sets.paginator.num_pages - 2:  # 显示前2页,或者最后2页
+        ele_class = ""
+        if query_sets.number == loop_counter:
+            ele_class = "active"
+        ele = '''<li class="%s"><a href="?page=%s%s&o=%s&q=%s">%s</a></li>''' % (ele_class, loop_counter, filters,order ,search,loop_counter)
+        return mark_safe(ele)
+
     if abs(query_sets.number - loop_counter) <= 1:
         ele_class = ""
         if query_sets.number == loop_counter:
             ele_class = "active"
-        ele = '''<li class="%s"><a href="?page=%s">%s</a></li>''' % (ele_class, loop_counter, loop_counter)
+        ele = '''<li class="%s"><a href="?page=%s%s">%s</a></li>''' % (ele_class, loop_counter, filters, loop_counter)
         return mark_safe(ele)
     return ''
 
@@ -74,10 +94,19 @@ def render_filter_ele(condtion, obj_all_model_and_display, filter_condtions):
     if type(field_obj).__name__ == "ManyToManyField":
         selected = ''
         for choice_item in field_obj.get_choices()[1:]:
-            print filter_condtions.get(condtion)
+            # print filter_condtions.get(condtion)
             if filter_condtions.get(condtion) == str(choice_item[0]):
                 selected = "selected"
             select_ele += '''<option value='%s' %s>%s</option>''' % (choice_item[0], selected, choice_item[1])
             selected = ''
     select_ele += "</select>"
     return mark_safe(select_ele)
+
+
+@register.simple_tag
+def change_order(column):
+    if column.startswith("-"):
+        column = column.strip("-")
+    else:
+        column = "-%s" % column
+    return column

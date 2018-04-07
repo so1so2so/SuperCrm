@@ -28,12 +28,18 @@
         <div class="row">
             <div class="col-sm-3 col-md-2 sidebar">
                 <ul class="nav nav-sidebar">
-                    <a href="#">table</a>
+                    <a href="{% url 'index' %}">table</a>
                 </ul>
             </div>
             <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-                <h1 class="page-header">添加数据</h1>
-                <h2 class="sub-header">标题</h2>
+                <h1 class="page-header"><a href="{% url 'table_add'  app_name table_name%}">增加{{ table_name }}表数据</a></h1>
+                <h2 class="sub-header">
+                    <form action="">
+                        <input type="search" name="q" value="{{ search }}"
+                               placeholder="{% for search in obj_all_model_and_display.search_fields %}{{ search }},{% endfor %}">
+                        <input type="submit" value="搜索">
+                    </form>
+                </h2>
                 <div class="row">
                     <form class="" method="get">
                         {% for condtion in obj_all_model_and_display.list_filters %}
@@ -42,7 +48,7 @@
                                 {% render_filter_ele condtion obj_all_model_and_display filter_condtions %}
                             </div>
                         {% endfor %}
-                        <button type="SUBMIT" class="btn btn-success">检索</button>
+                        <button type="SUBMIT" class="btn btn-success" style="line-height: 20px">检索</button>
                     </form>
 
                 </div>
@@ -58,31 +64,38 @@
                             <thead>
                             <tr>
                                 {% for column in obj_all_model_and_display.list_display %}
-                                    <th>{{ column }}</th>
+                                    <th><a href="?o={% if orders %}{{ column }}{% else %}{% change_order column %}{% endif %}">{{ column }} {% if orders  and flage %} ^{% else %}v{% endif %}</a></th>
                                 {% endfor %}
                             </tr>
                             </thead>
+                            <tfoot>
+                            <tr>
+                                <td>共计{{ query_sets.paginator.count }}条数据</td>
+                            </tr>
+                            </tfoot>
                             <tbody>
                             {% for one_obj_django in query_sets %}
                                 <tr>
-                                    {% build_table_row one_obj_django obj_all_model_and_display %}
+                                    {% build_table_row  request one_obj_django obj_all_model_and_display %}
                                 </tr>
                             {% endfor %}
                             </tbody>
+
                         </table>
                         <nav>
                             <ul class="pagination">
+
                                 {% if query_sets.has_previous %}
                                     <li class=""><a href="?page={{ query_sets.previous_page_number }}">上页</a></li>
                                 {% endif %}
                                 {#                   <li class="active"><a>{{ query_sets.number }}</a></li>#}
 
                                 {% for loop_counter in query_sets.paginator.page_range %}
-                                    {% render_page_ele loop_counter query_sets %}
+                                    {% render_page_ele loop_counter query_sets filter_condtions order search %}
                                 {% endfor %}
 
                                 {% if query_sets.has_next %}
-                                    <li class=""><a href="?page={{ query_sets.next_page_number }}">下页</a></li>
+                                    <li class=""><a href="?page={{ query_sets.next_page_number }}&o={% ifequal order True %}{% endifequal %}&q={% ifequal search True %}{% endifequal %}">下页</a></li>
                                 {% endif %}
 
 

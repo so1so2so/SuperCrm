@@ -8,20 +8,29 @@ enable_admins = {}
 class BaseAdmin(object):
     list_display = []
     list_filters = []
-    list_per_page=20
+    list_per_page = 10
+    search_fields = []
+    ordering = None
+
 
 class UserProfileAdmin(BaseAdmin):
-    list_display = ["id","name","roles"]
+    list_display = ["id", "name", "roles"]
 
 
 class CusterAdmin(BaseAdmin):
     # list_display = ["qq", "name"]
-    list_display = ['id', 'qq', 'name', 'source', 'content', 'status', 'date','tags']
-    list_filters = ['id','source','consultant','consult_course','status','tags']
-
+    list_display = ['id', 'qq', 'name', 'source', 'content', 'status', 'date', 'tags']
+    list_filters = ['source', 'consultant', 'consult_course', 'status', 'tags']
+    list_per_page = 10
+    search_fields = ['qq', 'name', 'consultant__name']
+    # ordering = 'qq'
     # model= models.Customer
+
+
 class ClassListAdmin(BaseAdmin):
-    list_display = ["class_type", "semester"]
+    list_display = ["id", "semester", "class_type", "start_date"]
+    list_filters = ['class_type']
+
 
 # admin.site.register(models.Customer, CustomerAdmin)
 
@@ -40,20 +49,20 @@ def register(model_obj, admin_class=None):
     table_name = model_obj._meta.model_name
     if app_name not in enable_admins:
         enable_admins[app_name] = {}
-    # if not admin_class:
+        # if not admin_class:
         # 数据类型如下
         # d = {"crm": {}}
     # 给admin_class这个类绑定一个属性,当前有list_display属性类似 只不过这个属性是一个model对象 model= models.Customer
     # 就可以用admin_class.model.object.all 拿到这model的值了
     # admin_obj = admin_class()
     # admin_obj.model = model_obj
-    admin_class.model=model_obj
+    admin_class.model = model_obj
     enable_admins[app_name][table_name] = admin_class
 
 
 register(models.Customer, admin_class=CusterAdmin)
-register(model_obj=models.UserProfile,admin_class=UserProfileAdmin)
-register(model_obj=models.ClassList,admin_class=ClassListAdmin)
+register(model_obj=models.UserProfile, admin_class=UserProfileAdmin)
+register(model_obj=models.ClassList, admin_class=ClassListAdmin)
 # register(model_obj=models.Course, admin_class=UserProfileAdmin)
 # register(model_obj=models.CourseRecord, admin_class=UserProfileAdmin)
 # register(model_obj=models.Branch, admin_class=UserProfileAdmin)

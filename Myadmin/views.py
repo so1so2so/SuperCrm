@@ -1,12 +1,17 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# _*_ coding:utf-8 _*_
 from __future__ import unicode_literals
 
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from Myadmin import myadmin
+from django.db.models import Q
 
 d_2 = {"crm": {"userprofile": "admin_class"}}
 from crm import models
+from django.utils.timezone import datetime, timedelta
+from forms import create_model_form
+
 
 # Create your views here.
 def index(request):
@@ -30,11 +35,38 @@ def show_app(request, app_name):
 
 
 def table_add(request, app_name, table_name):
-    return HttpResponse("table_add")
+    obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
+    new_model_form = create_model_form(request, obj_all_model_and_display)
+    if request.method == "GET":
+        form_obj = new_model_form()
+        return render(request, "Myadmin/table_add.html", locals())
+    elif request.method == "POST":
+        form_obj = new_model_form(request.POST)
+        if form_obj.is_valid():
+            form_obj.save()
+            # print request.path
+            return redirect(request.path.replace("/add/",''))
+        else:
+            return render(request, "Myadmin/table_add.html", locals())
 
 
 def table_edit(request, app_name, table_name, table_id):
-    return HttpResponse("edit")
+    obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
+    new_model_form = create_model_form(request, obj_all_model_and_display)
+    table_obj = obj_all_model_and_display.model.objects.get(id=table_id)
+    if request.method == "GET":
+        form_obj = new_model_form(instance=table_obj)
+        return render(request, "Myadmin/edit_table.html", locals())
+    elif request.method == "POST":
+        form_obj = new_model_form(request.POST, instance=table_obj)
+        if form_obj.is_valid():
+            form_obj.save()
+            # print request.path
+            return redirect(request.path.replace('/'+table_id+'/change/',''))
+        else:
+            return render(request, "Myadmin/edit_table.html", locals())
+
+
 
 
 def table_filter(request, admin_class):
@@ -43,12 +75,19 @@ def table_filter(request, admin_class):
     # print request.GET.items()
     # [(u'status', u''), (u'source', u'1'), (u'id', u''), (u'consult_course', u''), (u'consultant', u'2')] 是列表中的元祖，构造成字典
     for k, v in request.GET.items():
+        if k == "page":  # 保留的分页关键字
+            continue
+        if k == "o":  # 保留的排序关键字
+            continue
+        if k == "q":  # 保留的搜索的关键字
+            continue
         if v:
             filter_conditions[k] = v
+    # print filter_conditions
     # print admin_class.model.objects.filter(**filter_conditions),filter_conditions
     # print filter_conditions
     # {u'source': u'1', u'consultant': u'2'} 有值的才加到字典中。
-    return admin_class.model.objects.filter(**filter_conditions), filter_conditions
+    return admin_class.model.objects.filter(**filter_conditions).order_by(admin_class.ordering or '-id'), filter_conditions
 
 
 def show_table(request, app_name, table_name):
@@ -62,7 +101,24 @@ def show_table(request, app_name, table_name):
     #         if check_choise.choices:
     #             print check_choise.choices
     #     this_obj = obj_all.model.objects.values_list(*list_filed)
+    order = request.GET.get("o", None)
     object_list, filter_condtions = table_filter(request, obj_all_model_and_display)
+    if order:
+        if order.startswith("-"):
+            orders = True
+        else:
+            orders = False
+        flage = True
+        object_list = object_list.order_by(order)
+    search = request.GET.get("q", '')
+    search_fileds = obj_all_model_and_display.search_fields
+    my_search = Q()
+    my_search.connector = 'OR'
+    if search:
+        for search_file in search_fileds:
+            my_search.children.append((search_file + '__icontains', search))
+        print my_search
+        object_list = object_list.filter(my_search)
     paginator = Paginator(object_list, obj_all_model_and_display.list_per_page)  # Show 25 contacts per page
 
     page = request.GET.get('page')

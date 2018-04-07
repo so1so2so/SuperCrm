@@ -120,6 +120,7 @@ class ClassList(models.Model):
 
     def __unicode__(self):
         return "%s %s %s" % (self.branch, self.course, self.semester)
+        # return "zhang"
 
     class Meta:
         # 联合唯一

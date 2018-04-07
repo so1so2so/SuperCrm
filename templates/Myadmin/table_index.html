@@ -24,16 +24,18 @@
         </div>
     </div>
 </nav>
+
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
                 {#      {'crm': {'customer': <class 'Myadmin.myadmin.CusterAdmin'>, 'userprofile': <class 'Myadmin.myadmin.UserProfileAdmin'>}}#}
                 {% for app_name,table_obj in obj_all.items %}
-                    <a>{{ app_name }}</a>
+                    <a href="{% url 'index' %}">{{ app_name }}</a>
                 {% endfor %}
             </ul>
         </div>
+    {% block center %}
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
             <h2 class="sub-header">Section title</h2>
             <div class="bs-example" data-example-id="table-within-panel">
@@ -72,5 +74,6 @@
                     </div>
                     </div>
                     </div>
+    {% endblock %}
                     </body>
                 {% endblock %}
