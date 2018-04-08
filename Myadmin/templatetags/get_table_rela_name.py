@@ -10,7 +10,8 @@ register = template.Library()
 
 @register.simple_tag
 def get_rela_name(table_obj):
-    table_name = table_obj.model._meta.verbose_name_plural
+    table_name = table_obj.model._meta.verbose_name_plural or table_obj.verbose_name
+
     if not table_name:
         table_name = table_obj.model._meta.model_mame
     return table_name
@@ -19,12 +20,12 @@ def get_rela_name(table_obj):
 @register.simple_tag
 def build_table_row(request,one_obj_django, obj_all_model_and_display):
     row_ele = ""
-    for index,column in enumerate(obj_all_model_and_display.list_display):
-        field_obj = one_obj_django._meta.get_field(column)
+    for index,filed in enumerate(obj_all_model_and_display.list_display):
+        field_obj = one_obj_django._meta.get_field(filed)
         if field_obj.choices:  # choices type
-            column_data = getattr(one_obj_django, "get_%s_display" % column)()
+            column_data = getattr(one_obj_django, "get_%s_display" % filed)()
         else:
-            column_data = getattr(one_obj_django, column)
+            column_data = getattr(one_obj_django, filed)
         if type(column_data).__name__ == 'datetime':
             column_data = column_data.strftime("%Y-%m-%d %H:%M:%S")
         if type(field_obj).__name__ == "ManyToManyField":
@@ -33,7 +34,7 @@ def build_table_row(request,one_obj_django, obj_all_model_and_display):
                 if str(choice_item[0]) == one_obj_django:
                     pass
         if index==0: #add <a></a> tag
-            column_data= "<a href='{request_path}/{obj_id}/change'>{date}</a>".format(
+            column_data= "<a href='{request_path}/{obj_id}/change' target='_self'>{date}</a>".format(
                 request_path=request.path,
                 obj_id=one_obj_django.id,
                 date=column_data,

@@ -6,7 +6,7 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from Myadmin import myadmin
 from django.db.models import Q
-
+# from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 d_2 = {"crm": {"userprofile": "admin_class"}}
 from crm import models
 from django.utils.timezone import datetime, timedelta
@@ -91,24 +91,18 @@ def table_filter(request, admin_class):
 
 
 def show_table(request, app_name, table_name):
+    # 拿到admin_class对象
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
+    # 拿到model对象
     all_obj_django = obj_all_model_and_display.model.objects.all()
-    # if dict(obj_all.__dict__).has_key("list_display"):
-    #     list_filed = obj_all.__dict__["list_display"]
-    #     for filed in list_filed:
-    #         check_choise = obj_all.model._meta.get_field(filed)
-    #         # print check_choise
-    #         if check_choise.choices:
-    #             print check_choise.choices
-    #     this_obj = obj_all.model.objects.values_list(*list_filed)
-    order = request.GET.get("o", None)
     object_list, filter_condtions = table_filter(request, obj_all_model_and_display)
+    order = request.GET.get("o", None)
     if order:
         if order.startswith("-"):
             orders = True
         else:
             orders = False
-        flage = True
+        # flage = True
         object_list = object_list.order_by(order)
     search = request.GET.get("q", '')
     search_fileds = obj_all_model_and_display.search_fields
@@ -117,10 +111,9 @@ def show_table(request, app_name, table_name):
     if search:
         for search_file in search_fileds:
             my_search.children.append((search_file + '__icontains', search))
-        print my_search
+        # print my_search
         object_list = object_list.filter(my_search)
     paginator = Paginator(object_list, obj_all_model_and_display.list_per_page)  # Show 25 contacts per page
-
     page = request.GET.get('page')
     try:
         query_sets = paginator.page(page)

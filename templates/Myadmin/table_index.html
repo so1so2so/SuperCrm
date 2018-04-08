@@ -28,20 +28,22 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
+        {% for app_name,table_obj_all in obj_all.items %}
             <ul class="nav nav-sidebar">
                 {#      {'crm': {'customer': <class 'Myadmin.myadmin.CusterAdmin'>, 'userprofile': <class 'Myadmin.myadmin.UserProfileAdmin'>}}#}
-                {% for app_name,table_obj in obj_all.items %}
-                    <a href="{% url 'index' %}">{{ app_name }}</a>
+                {% for  table_name,table_obj in table_obj_all.items %}
+                    <li class=""><a href="{% url 'show_table' app_name table_name %}">{% get_rela_name table_obj %}</a></li>
                 {% endfor %}
             </ul>
+        {% endfor %}
         </div>
     {% block center %}
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-            <h2 class="sub-header">Section title</h2>
+            <h2 class="sub-header">数据维护</h2>
             <div class="bs-example" data-example-id="table-within-panel">
                     <div class="panel panel-default">
                         <!-- Default panel contents -->
-                        <div class="panel-heading">选择{{ 1 }}来修改</div>
+{#                        <div class="panel-heading">选择{{ 1 }}来修改</div>#}
                         <div class="panel-body" style="background-color: #2d6987 ">
                             {% for app_name,table_obj_all in obj_all.items %}
                                 <a href="{% url "show_app" app_name %}" style="color: #fff">{{ app_name }}</a>
@@ -51,8 +53,6 @@
                                     <thead>
                                     <tr>
                                         <th>表名</th>
-                                        {#                                            <th>Last Name</th>#}
-                                        {#                                            <th>Username</th>#}
                                     </tr>
                                     </thead>
                                     <tbody>

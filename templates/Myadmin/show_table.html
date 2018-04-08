@@ -28,29 +28,36 @@
         <div class="row">
             <div class="col-sm-3 col-md-2 sidebar">
                 <ul class="nav nav-sidebar">
-                    <a href="{% url 'index' %}">table</a>
+                    <a href="{% url 'index' %}">首页</a>>>
+                    <span class=""></span> <a href="/Myadmin/crm">Crm</a>>>
+                    <span class=""></span> <a href="{% url 'show_table' app_name table_name %}">{{ table_name }} </a>
                 </ul>
             </div>
             <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-                <h1 class="page-header"><a href="{% url 'table_add'  app_name table_name%}">增加{{ table_name }}表数据</a></h1>
+                <h1 class="page-header"><a href="{% url 'table_add'  app_name table_name %}">增加{{ table_name }}表数据</a>
+                </h1>
                 <h2 class="sub-header">
-                    <form action="">
-                        <input type="search" name="q" value="{{ search }}"
-                               placeholder="{% for search in obj_all_model_and_display.search_fields %}{{ search }},{% endfor %}">
-                        <input type="submit" value="搜索">
-                    </form>
+                    {% if obj_all_model_and_display.search_fields %}
+                        <form action="">
+                            <input type="search" name="q" value="{{ search }}"
+                                   placeholder="
+                                           {% for search in obj_all_model_and_display.search_fields %}{{ search }},{% endfor %}">
+                            <input type="submit" value="搜索">
+                        </form>
+                    {% endif %}
                 </h2>
-                <div class="row">
-                    <form class="" method="get">
-                        {% for condtion in obj_all_model_and_display.list_filters %}
-                            <div class="col-lg-2">
-                                <span>{{ condtion }}</span>
-                                {% render_filter_ele condtion obj_all_model_and_display filter_condtions %}
-                            </div>
-                        {% endfor %}
-                        <button type="SUBMIT" class="btn btn-success" style="line-height: 20px">检索</button>
-                    </form>
-
+                <div class="table row">
+                    {% if obj_all_model_and_display.list_filters %}
+                        <form class="" method="get">
+                            {% for condtion in obj_all_model_and_display.list_filters %}
+                                <div class="col-lg-2 ">
+                                    <span class="center-block" style="width: 50px">{{ condtion }}</span>
+                                    {% render_filter_ele condtion obj_all_model_and_display filter_condtions %}
+                                </div>
+                            {% endfor %}
+                            <button type="SUBMIT" class="btn btn-success center-block">检索</button>
+                        </form>
+                    {% endif %}
                 </div>
                 <div class="bs-example" data-example-id="table-within-panel">
                     <div class="panel panel-default">
@@ -60,11 +67,15 @@
 
                             <a href="/Myadmin/crm" style="color: #fff">{% get_rela_name obj_all_model_and_display %}</a>
                         </div>
-                        <table class="table">
+                        <table class="table  table-bordered table-hover  ">
                             <thead>
                             <tr>
+                                <th><input type="checkbox" name="_selected_action" value="25" class="action-select">
+                                </th>
                                 {% for column in obj_all_model_and_display.list_display %}
-                                    <th><a href="?o={% if orders %}{{ column }}{% else %}{% change_order column %}{% endif %}">{{ column }} {% if orders  and flage %} ^{% else %}v{% endif %}</a></th>
+                                    <th><a href="?o=
+                                            {% if orders %}{{ column }}{% else %}{% change_order column %}{% endif %}">{{ column }}
+                                        {% if orders  and flage %} ^{% else %}v{% endif %}</a></th>
                                 {% endfor %}
                             </tr>
                             </thead>
@@ -76,7 +87,9 @@
                             <tbody>
                             {% for one_obj_django in query_sets %}
                                 <tr>
-                                    {% build_table_row  request one_obj_django obj_all_model_and_display %}
+                                    <td><input type="checkbox" name="_selected_action" value="25" class="action-select">
+                                    </td>
+                                    {% build_table_row request one_obj_django obj_all_model_and_display %}
                                 </tr>
                             {% endfor %}
                             </tbody>
@@ -84,11 +97,10 @@
                         </table>
                         <nav>
                             <ul class="pagination">
-
                                 {% if query_sets.has_previous %}
                                     <li class=""><a href="?page={{ query_sets.previous_page_number }}">上页</a></li>
                                 {% endif %}
-                                {#                   <li class="active"><a>{{ query_sets.number }}</a></li>#}
+{#                                                   <li class="active"><a>{{ query_sets.number }}</a></li>#}
 
                                 {% for loop_counter in query_sets.paginator.page_range %}
                                     {% render_page_ele loop_counter query_sets filter_condtions order search %}
@@ -98,10 +110,6 @@
                                     <li class=""><a href="?page={{ query_sets.next_page_number }}&o={% ifequal order True %}{% endifequal %}&q={% ifequal search True %}{% endifequal %}">下页</a></li>
                                 {% endif %}
 
-
-                                {#                <li class="disabled"><a href="#">&laquo;</a></li>#}
-                                {#                <li class="active"><a href="#">1 <span class="sr-only">(current)</span></a></li>#}
-                                {#                #}
                             </ul>
                         </nav>
                     </div>

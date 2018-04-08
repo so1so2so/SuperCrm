@@ -17,12 +17,17 @@ class UserProfileAdmin(BaseAdmin):
     list_display = ["id", "name", "roles"]
 
 
+class BaseisAdmin(BaseAdmin):
+    list_display = ["id"]
+
+
+
 class CusterAdmin(BaseAdmin):
     # list_display = ["qq", "name"]
     list_display = ['id', 'qq', 'name', 'source', 'content', 'status', 'date', 'tags']
     list_filters = ['source', 'consultant', 'consult_course', 'status', 'tags']
     list_per_page = 10
-    search_fields = ['qq', 'name', 'consultant__name']
+    search_fields = ['qq', 'consultant__name']
     # ordering = 'qq'
     # model= models.Customer
 
@@ -35,7 +40,6 @@ class ClassListAdmin(BaseAdmin):
 # admin.site.register(models.Customer, CustomerAdmin)
 
 
-
 # 最后形成的数据格式应该是(d)这样 先是app名称,然后里面是一个小字典
 # 小字典里面是表名(model的class名称,但是都应该是小写的)和生成注册的时候自定义指定的admin_class对象,这个对象里面配置了可以显示的字段
 # 通过表对象拿到app名称 封装在model_obj里面的models.Customer._meta.app_label  crm
@@ -44,7 +48,7 @@ class ClassListAdmin(BaseAdmin):
 d = {"crm": {"userprofile": "admin_class"}}
 
 
-def register(model_obj, admin_class=None):
+def register(model_obj, admin_class=BaseisAdmin):
     app_name = model_obj._meta.app_label
     table_name = model_obj._meta.model_name
     if app_name not in enable_admins:
@@ -56,13 +60,21 @@ def register(model_obj, admin_class=None):
     # 就可以用admin_class.model.object.all 拿到这model的值了
     # admin_obj = admin_class()
     # admin_obj.model = model_obj
+
     admin_class.model = model_obj
     enable_admins[app_name][table_name] = admin_class
 
 
-register(models.Customer, admin_class=CusterAdmin)
-register(model_obj=models.UserProfile, admin_class=UserProfileAdmin)
-register(model_obj=models.ClassList, admin_class=ClassListAdmin)
-# register(model_obj=models.Course, admin_class=UserProfileAdmin)
-# register(model_obj=models.CourseRecord, admin_class=UserProfileAdmin)
-# register(model_obj=models.Branch, admin_class=UserProfileAdmin)
+
+register(models.Customer, CusterAdmin)
+register(models.UserProfile, UserProfileAdmin)
+register(models.ClassList, ClassListAdmin)
+register(models.StudyRecord)
+# register(models.Course)
+# register(models.Branch)
+# register(models.CourseRecord)
+# register(models.Enrollment)
+# register(models.Payment)
+# register(models.Role)
+# register(models.Menu)
+# register(models.CustomerFollowUp)
