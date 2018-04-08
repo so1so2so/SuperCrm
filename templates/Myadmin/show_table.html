@@ -73,8 +73,7 @@
                                 <th><input type="checkbox" name="_selected_action" value="25" class="action-select">
                                 </th>
                                 {% for column in obj_all_model_and_display.list_display %}
-                                    <th><a href="?o=
-                                            {% if orders %}{{ column }}{% else %}{% change_order column %}{% endif %}">{{ column }}
+                                    <th><a href="?o={% if orders %}{{ column }}{% else %}{% change_order column %}{% endif %}">{{ column }}
                                         {% if orders  and flage %} ^{% else %}v{% endif %}</a></th>
                                 {% endfor %}
                             </tr>

@@ -17,10 +17,10 @@ from django.conf.urls import url,include
 from django.contrib import admin
 import jet
 urlpatterns = [
+    url(r'^admin/', admin.site.urls),
     url(r'^crm/', include("crm.urls")),
     url(r'^students/', include("students.urls")),
     url(r'^Myadmin/', include("Myadmin.urls")),
-    url(r'^jet/', include('jet.urls', 'jet')),
+    # url(r'^jet/', include('jet.urls', 'jet')),
     # url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
-    url(r'^admin/', admin.site.urls),
 ]

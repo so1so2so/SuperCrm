@@ -18,9 +18,9 @@ def get_rela_name(table_obj):
 
 
 @register.simple_tag
-def build_table_row(request,one_obj_django, obj_all_model_and_display):
+def build_table_row(request, one_obj_django, obj_all_model_and_display):
     row_ele = ""
-    for index,filed in enumerate(obj_all_model_and_display.list_display):
+    for index, filed in enumerate(obj_all_model_and_display.list_display):
         field_obj = one_obj_django._meta.get_field(filed)
         if field_obj.choices:  # choices type
             column_data = getattr(one_obj_django, "get_%s_display" % filed)()
@@ -33,8 +33,8 @@ def build_table_row(request,one_obj_django, obj_all_model_and_display):
             for choice_item in all_date:
                 if str(choice_item[0]) == one_obj_django:
                     pass
-        if index==0: #add <a></a> tag
-            column_data= "<a href='{request_path}/{obj_id}/change' target='_self'>{date}</a>".format(
+        if index == 0:  # add <a></a> tag
+            column_data = "<a href='{request_path}/{obj_id}/change' target='_self'>{date}</a>".format(
                 request_path=request.path,
                 obj_id=one_obj_django.id,
                 date=column_data,
@@ -45,19 +45,20 @@ def build_table_row(request,one_obj_django, obj_all_model_and_display):
 
 
 @register.simple_tag
-def render_page_ele(loop_counter, query_sets, filter_condtions,order,search):
+def render_page_ele(loop_counter, query_sets, filter_condtions, order, search):
     filters = ''
     for k, v in filter_condtions.items():
         filters += "&%s=%s" % (k, v)
     if not order:
-        order=''
+        order = ''
     if not search:
-        search=''
+        search = ''
     if loop_counter < 3 or loop_counter > query_sets.paginator.num_pages - 2:  # 显示前2页,或者最后2页
         ele_class = ""
         if query_sets.number == loop_counter:
             ele_class = "active"
-        ele = '''<li class="%s"><a href="?page=%s%s&o=%s&q=%s">%s</a></li>''' % (ele_class, loop_counter, filters,order ,search,loop_counter)
+        ele = '''<li class="%s"><a href="?page=%s%s&o=%s&q=%s">%s</a></li>''' % (
+        ele_class, loop_counter, filters, order, search, loop_counter)
         return mark_safe(ele)
 
     if abs(query_sets.number - loop_counter) <= 1:
@@ -111,3 +112,53 @@ def change_order(column):
     else:
         column = "-%s" % column
     return column
+
+
+@register.simple_tag
+def get_all_m2m_list(obj_all_model_and_display, field, form_obj):
+    """
+
+    :param obj_all_model_and_display:
+    :param field:
+    :param form_obj:
+    :return: 返还m2m所有待选数据
+    """
+    # models.Customer.tags.rel.to.objects.all()
+    # obj_all_model_and_display.model=models.Customer
+    # print obj_all_model_and_display.model
+    if hasattr(form_obj.instance, field.name):
+        field_select_obj = getattr(form_obj.instance, field.name).all()
+        # print field_select_obj
+    if hasattr(obj_all_model_and_display.model, field.name):
+        field_all_obj = getattr(obj_all_model_and_display.model, field.name).rel.to.objects.all()
+        # print field_all_obj
+        # 相当于field_obj =models.Customer.tags.
+        #     类似 getattr(d,'tags').rel.to.objects.all()
+        #     print field_all_obj.intersection(field_select_obj)
+        #     "返还全部的减去待选的"
+        return field_all_obj.difference(field_select_obj)
+        # return (field_select_obj|field_all_obj).distinct()
+    else:
+        return ""
+
+
+@register.simple_tag
+def print_obj_(obj):
+    return obj.instance
+
+
+@register.simple_tag
+def get_select_m2m_list(form_obj, field):
+    """
+
+    :param form_obj:
+    :param field:
+    :return: {{ form_obj.instance.tags.all }}
+    form_obj= new_model_form(instance=table_obj)
+    返还已选择的
+    """
+    if hasattr(form_obj.instance, field.name):
+        field_select_obj = getattr(form_obj.instance, field.name)
+        return field_select_obj.all()
+    else:
+        return ""

@@ -28,6 +28,7 @@ class CusterAdmin(BaseAdmin):
     list_filters = ['source', 'consultant', 'consult_course', 'status', 'tags']
     list_per_page = 10
     search_fields = ['qq', 'consultant__name']
+    filter_horizontal = ('tags',)
     # ordering = 'qq'
     # model= models.Customer
 

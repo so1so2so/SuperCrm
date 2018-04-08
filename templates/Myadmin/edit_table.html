@@ -1,5 +1,15 @@
 {% extends 'Myadmin/table_index.html' %}
 {% load get_table_rela_name %}
+{% block css %}
+    <style type="text/css">
+    .filter-select-box{
+        height: 250px!important;
+        width: 100%;
+        border-radius: 3px;
+    }
+    </style>
+
+{% endblock %}
 {% block center %}
     <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <h2 class="sub-header">Section title</h2>
@@ -8,14 +18,14 @@
                 <!-- Default panel contents -->
                 <div class="panel-heading">选择{{ 1 }}来修改</div>
                 <form class="form-horizontal" role="form"
-{#                      action="{% url 'table_edit' app_name table_name table_id %}" #}
-                      method="POST">{% csrf_token %}
+                        {#                      action="{% url 'table_edit' app_name table_name table_id %}" #}
+                      method="POST" onsubmit="return SelectAllChosenData()">{% csrf_token %}
                     <span style="color: red">{{ form_obj.errors }}</span>
                     {% for field in form_obj %}
                         <div class="form-group">
                             <label class="col-sm-2 control-label" style="font-weight: normal">
                                 {% if field.field.required %}
-{#                                     #必填#}
+                                    {#                                     #必填#}
                                     <b>{{ field.label }}</b>
                                 {% else %}
                                     {{ field.label }}
@@ -23,7 +33,33 @@
                             </label>
                             <div class="col-sm-4">
                                 {#          <input type="email" class="form-control" id="inputEmail3" placeholder="Email">#}
-                                {{ field }}
+                                {% if field.name in obj_all_model_and_display.filter_horizontal %}
+                                    <div class="col-md-5">
+                                            {%  get_all_m2m_list obj_all_model_and_display field  form_obj as  m2m_all_list%}
+                                        <select multiple class="filter-select-box" id="id_{{ field.name }}_from">
+                                            {% for obj in m2m_all_list %}
+                                           <option  value="{{ obj.id }}" ondblclick="MoveEleTo(this,'id_{{ field.name }}_to','id_{{ field.name }}_from')"> {{ obj }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-1">
+                                        箭头
+
+                                    </div>
+{#                                    {{ field }}#}
+                                    <div class="col-md-5">
+                                        {% get_select_m2m_list form_obj field as m2m_select_list %}
+                                        <select tag='chosen_list' multiple class="filter-select-box" id="id_{{ field.name }}_to" name="{{ field.name }}">
+                                              {% for obj in m2m_select_list %}
+                                           <option value="{{ obj.id }}" ondblclick="MoveEleTo(this,'id_{{ field.name }}_from','id_{{ field.name }}_to')"> {{ obj }}</option>
+                                            {% endfor %}
+                                        </select>
+{#                                        {{ form_obj.instance.tags.all }}#}
+{#                                    {% print_obj_  form_obj %}#}
+                                    </div>
+                                {% else %}
+                                    {{ field }}
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
@@ -33,6 +69,22 @@
                         </div>
                     </div>
                 </form>
+            <script>
+                function  MoveEleTo(ele,target_id,new_target_id) {
+                    var opt_ele = "<option value='" + $(ele).val() + "' ondblclick=MoveEleTo(this,'" + new_target_id +"','"+ target_id +"')>" + $(ele).text() + "</option>";
+       // $(ele).off().dblclick($(ele), parent_id)
+        $("#" +target_id).append(opt_ele);
+        $(ele).remove();
+                }
+        function SelectAllChosenData() {
+
+            $("select[tag='chosen_list'] option").each(function () {
+                $(this).prop("selected",true);
+            })
+            return true;
+        }
+
+            </script>
             </div>
         </div>
     </div>
