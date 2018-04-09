@@ -1,0 +1,32 @@
+{% extends 'Myadmin/table_index.html' %}
+{% load get_table_rela_name %}
+{% block css %}
+    <style type="text/css">
+    .filter-select-box{
+        height: 250px!important;
+        width: 100%;
+        border-radius: 3px;
+    }
+    </style>
+
+{% endblock %}
+{% block center %}
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <h2 class="sub-header">你确定吗？</h2>
+        <div class="bs-example" data-example-id="table-within-panel">
+            <div class="panel panel-default">
+                <!-- Default panel contents -->
+               <!-- <div class="panel-heading">选择{{ 1 }}来修改</div>-->
+    {% display_obj_related table_obj  %}
+
+   <form method="post">{% csrf_token %}
+        <input type="submit" class="btn btn-danger" value="Yes,I'm sure">
+        <input type="hidden" value="yes" name="delete_confirm">
+        <input type="hidden" value="{{ selected_ids }}" name="selected_ids">
+        <input type="hidden" value="{{ action }}" name="action">
+        <a class="btn btn-info" href="{% url 'table_delete' app_name table_name  table_id %}">No,Take me back</a>
+    </form>
+            </div>
+        </div>
+</div>
+{% endblock %}

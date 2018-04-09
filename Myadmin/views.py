@@ -66,7 +66,16 @@ def table_edit(request, app_name, table_name, table_id):
         else:
             return render(request, "Myadmin/edit_table.html", locals())
 
-
+def table_delete(request, app_name, table_name, table_id):
+    obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
+    models.Customer.objects.filter(id=1)
+    table_obj = obj_all_model_and_display.model.objects.get(id=table_id)
+    if request.method == "GET":
+        return render(request, "Myadmin/table_delete.html", locals())
+    elif request.method == "POST":
+        return redirect(request.path.replace('/'+table_id+'/change/',''))
+    else:
+        return render(request, "Myadmin/edit_table.html", locals())
 
 
 def table_filter(request, admin_class):

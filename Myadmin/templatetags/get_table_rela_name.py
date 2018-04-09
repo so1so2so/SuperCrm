@@ -18,6 +18,16 @@ def get_rela_name(table_obj):
 
 
 @register.simple_tag
+def get_chinese_name(table_obj):
+    if hasattr(table_obj._meta, 'verbose_name_plural'):
+        return table_obj._meta.verbose_name_plural
+    elif hasattr(table_obj._meta, 'verbose_name'):
+        return table_obj._meta.verbose_name
+    else:
+        return table_obj._meta.model_mame
+
+
+@register.simple_tag
 def build_table_row(request, one_obj_django, obj_all_model_and_display):
     row_ele = ""
     for index, filed in enumerate(obj_all_model_and_display.list_display):
@@ -58,7 +68,7 @@ def render_page_ele(loop_counter, query_sets, filter_condtions, order, search):
         if query_sets.number == loop_counter:
             ele_class = "active"
         ele = '''<li class="%s"><a href="?page=%s%s&o=%s&q=%s">%s</a></li>''' % (
-        ele_class, loop_counter, filters, order, search, loop_counter)
+            ele_class, loop_counter, filters, order, search, loop_counter)
         return mark_safe(ele)
 
     if abs(query_sets.number - loop_counter) <= 1:
@@ -126,9 +136,6 @@ def get_all_m2m_list(obj_all_model_and_display, field, form_obj):
     # models.Customer.tags.rel.to.objects.all()
     # obj_all_model_and_display.model=models.Customer
     # print obj_all_model_and_display.model
-    if hasattr(form_obj.instance, field.name):
-        field_select_obj = getattr(form_obj.instance, field.name).all()
-        # print field_select_obj
     if hasattr(obj_all_model_and_display.model, field.name):
         field_all_obj = getattr(obj_all_model_and_display.model, field.name).rel.to.objects.all()
         # print field_all_obj
@@ -136,10 +143,12 @@ def get_all_m2m_list(obj_all_model_and_display, field, form_obj):
         #     类似 getattr(d,'tags').rel.to.objects.all()
         #     print field_all_obj.intersection(field_select_obj)
         #     "返还全部的减去待选的"
+    if hasattr(form_obj.instance, field.name):
+        field_select_obj = getattr(form_obj.instance, field.name).all()
         return field_all_obj.difference(field_select_obj)
-        # return (field_select_obj|field_all_obj).distinct()
     else:
-        return ""
+        return field_all_obj
+        # return (field_select_obj|field_all_obj).distinct()
 
 
 @register.simple_tag
@@ -162,3 +171,69 @@ def get_select_m2m_list(form_obj, field):
         return field_select_obj.all()
     else:
         return ""
+
+
+def recursive_related_objs_lookup(objs):
+    # model_name = objs[0]._meta.model_name
+    ul_ele = "<ul>"
+    for obj in objs:
+        li_ele = '''<li> %s: %s </li>''' % (obj._meta.verbose_name, obj.__unicode__().strip("<>"))
+        ul_ele += li_ele
+
+        # for local many to many
+        # print("------- obj._meta.local_many_to_many", obj._meta.local_many_to_many)
+        for m2m_field in obj._meta.local_many_to_many:  # 把所有跟这个对象直接关联的m2m字段取出来了
+            sub_ul_ele = "<ul>"
+            m2m_field_obj = getattr(obj, m2m_field.name)  # getattr(customer, 'tags')
+            for o in m2m_field_obj.select_related():  # customer.tags.select_related()
+                li_ele = '''<li> %s: %s </li>''' % (m2m_field.verbose_name, o.__unicode__().strip("<>"))
+                sub_ul_ele += li_ele
+
+            sub_ul_ele += "</ul>"
+            ul_ele += sub_ul_ele  # 最终跟最外层的ul相拼接
+
+        for related_obj in obj._meta.related_objects:
+            if 'ManyToManyRel' in related_obj.__repr__():
+
+                if hasattr(obj, related_obj.get_accessor_name()):  # hassattr(customer,'enrollment_set')
+                    accessor_obj = getattr(obj, related_obj.get_accessor_name())
+                    print("-------ManyToManyRel", accessor_obj, related_obj.get_accessor_name())
+                    # 上面accessor_obj 相当于 customer.enrollment_set
+                    if hasattr(accessor_obj, 'select_related'):  # slect_related() == all()
+                        target_objs = accessor_obj.select_related()  # .filter(**filter_coditions)
+                        # target_objs 相当于 customer.enrollment_set.all()
+
+                        sub_ul_ele = "<ul style='color:red'>"
+                        for o in target_objs:
+                            li_ele = '''<li> %s: %s </li>''' % (o._meta.verbose_name, o.__unicode__().strip("<>"))
+                            sub_ul_ele += li_ele
+                        sub_ul_ele += "</ul>"
+                        ul_ele += sub_ul_ele
+
+            elif hasattr(obj, related_obj.get_accessor_name()):  # hassattr(customer,'enrollment_set')
+                accessor_obj = getattr(obj, related_obj.get_accessor_name())
+                # 上面accessor_obj 相当于 customer.enrollment_set
+                if hasattr(accessor_obj, 'select_related'):  # slect_related() == all()
+                    target_objs = accessor_obj.select_related()  # .filter(**filter_coditions)
+                    # target_objs 相当于 customer.enrollment_set.all()
+                else:
+                    print("one to one i guess:", accessor_obj)
+                    target_objs = accessor_obj
+
+                if len(target_objs) > 0:
+                    # print("\033[31;1mdeeper layer lookup -------\033[0m")
+                    # nodes = recursive_related_objs_lookup(target_objs,model_name)
+                    nodes = recursive_related_objs_lookup(target_objs)
+                    ul_ele += nodes
+    ul_ele += "</ul>"
+    return ul_ele
+
+
+@register.simple_tag
+def display_obj_related(objs):
+    '''把对象及所有相关联的数据取出来'''
+    objs = [objs, ]  # fake
+    if objs:
+        model_class = objs[0]._meta.model  # <class 'crm.models.Customer'>
+        mode_name = objs[0]._meta.model_name  # customer
+        return mark_safe(recursive_related_objs_lookup(objs))
