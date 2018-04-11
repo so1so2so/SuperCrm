@@ -37,6 +37,20 @@
                 <h1 class="page-header"><a href="{% url 'table_add'  app_name table_name %}">增加{{ table_name }}表数据</a>
                 </h1>
                 <h2 class="sub-header">
+                <form onsubmit="return ActionSubmit(this)" method="POST">{% csrf_token %}
+                            <div class="col-lg-2 ">
+                            <select id="action_list" name="action" class="form-control" style="margin-left:15px">
+                                <option>-----------</option>
+                                {% for action in obj_all_model_and_display.actions %}
+                                <option value="{{ action }}">{{ action }}</option>
+                                {% endfor %}
+                            </select>
+{#                            <input type="submit" value="提交" class="btn ">#}
+                        </div>
+                    <div class="col-lg-1"　>
+                        <button type="submit" class="btn  " >Go</button>
+                      </div>
+                </form>
                     {% if obj_all_model_and_display.search_fields %}
                         <form action="">
                             <input type="search" name="q" value="{{ search }}"
@@ -45,8 +59,10 @@
                             <input type="submit" value="搜索">
                         </form>
                     {% endif %}
+
                 </h2>
                 <div class="table row">
+
                     {% if obj_all_model_and_display.list_filters %}
                         <form class="" method="get">
                             {% for condtion in obj_all_model_and_display.list_filters %}
@@ -70,7 +86,7 @@
                         <table class="table  table-bordered table-hover  ">
                             <thead>
                             <tr>
-                                <th><input type="checkbox" name="_selected_action" value="25" class="action-select">
+                                <th><input type="checkbox"  style="width: 35px" onclick="myselectall(this)">
                                 </th>
                                 {% for column in obj_all_model_and_display.list_display %}
                                     <th><a href="?o={% if orders %}{{ column }}{% else %}{% change_order column %}{% endif %}">{{ column }}
@@ -86,7 +102,7 @@
                             <tbody>
                             {% for one_obj_django in query_sets %}
                                 <tr>
-                                    <td><input type="checkbox" name="_selected_action" value="25" class="action-select">
+                                    <td><input  tag="obj_checkbox" type="checkbox" value="{{ one_obj_django.id }}">
                                     </td>
                                     {% build_table_row request one_obj_django obj_all_model_and_display %}
                                 </tr>
@@ -116,5 +132,43 @@
             </div>
         </div>
     </div>
+    <script>
+        function myselectall(self) {
+    $("input[tag='obj_checkbox']").each(function () {
+        if($(this).prop("checked")){
+            $(this).prop("checked",false)
+        }
+        else{
+             $(this).prop("checked",true)
+        }
+
+    })
+}
+
+       function ActionSubmit(form_ele) {
+           var selected_ids = [];
+           $("input[tag='obj_checkbox']:checked").each(function () {
+               selected_ids.push($(this).val());
+           })
+           var selected_action = $("#action_list").val();
+           console.log(selected_ids)
+           console.log(selected_action)
+           if (selected_ids.length == 0){
+               alert("No object got selected!");
+               return
+           }
+           if (!selected_action ){
+               alert("No action got selected!");
+           }
+
+
+           //start submit
+            var selected_ids_ele = "<input  name='selected_ids' type='hidden' value='" + selected_ids.toString() + "' >"
+            $(form_ele).append(selected_ids_ele);
+
+           return true;
+       }
+
+    </script>
     </body>
 {% endblock %}

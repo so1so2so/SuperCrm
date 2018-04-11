@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # _*_ coding:utf-8 _*_
 from crm import models
+from django.shortcuts import render, redirect
 
 enable_admins = {}
 
@@ -11,6 +12,23 @@ class BaseAdmin(object):
     list_per_page = 10
     search_fields = []
     ordering = None
+    actions = ["delete_selected_objs", ]
+
+    def delete_selected_objs(self, request, querysets):
+        app_name = self.model._meta.app_label
+        table_name = self.model._meta.model_name
+        print("--->delete_selected_objs", self, request, querysets)
+        if request.POST.get("delete_confirm") == "yes":
+            querysets.delete()
+            return redirect("/king_admin/%s/%s/" % (app_name, table_name))
+        selected_ids = ','.join([str(i.id) for i in querysets])
+        return render(request, "Myadmin/table_delete.html", {"objs": querysets,
+                                                             "admin_class": self,
+                                                             "app_name": app_name,
+                                                             "table_name": table_name,
+                                                             "selected_ids": selected_ids,
+                                                             "action": request._admin_action
+                                                             })
 
 
 class UserProfileAdmin(BaseAdmin):
@@ -19,7 +37,6 @@ class UserProfileAdmin(BaseAdmin):
 
 class BaseisAdmin(BaseAdmin):
     list_display = ["id"]
-
 
 
 class CusterAdmin(BaseAdmin):
@@ -36,6 +53,10 @@ class CusterAdmin(BaseAdmin):
 class ClassListAdmin(BaseAdmin):
     list_display = ["id", "semester", "class_type", "start_date"]
     list_filters = ['class_type']
+
+
+class Myuser(BaseAdmin):
+    list_display = ['id']
 
 
 # admin.site.register(models.Customer, CustomerAdmin)
@@ -64,7 +85,6 @@ def register(model_obj, admin_class=BaseisAdmin):
 
     admin_class.model = model_obj
     enable_admins[app_name][table_name] = admin_class
-
 
 
 register(models.Customer, CusterAdmin)

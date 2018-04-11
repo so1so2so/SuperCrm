@@ -6,6 +6,7 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from Myadmin import myadmin
 from django.db.models import Q
+
 # from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 d_2 = {"crm": {"userprofile": "admin_class"}}
 from crm import models
@@ -45,7 +46,7 @@ def table_add(request, app_name, table_name):
         if form_obj.is_valid():
             form_obj.save()
             # print request.path
-            return redirect(request.path.replace("/add/",''))
+            return redirect(request.path.replace("/add/", ''))
         else:
             return render(request, "Myadmin/table_add.html", locals())
 
@@ -62,20 +63,20 @@ def table_edit(request, app_name, table_name, table_id):
         if form_obj.is_valid():
             form_obj.save()
             # print request.path
-            return redirect(request.path.replace('/'+table_id+'/change/',''))
+            return redirect(request.path.replace('/' + table_id + '/change/', ''))
         else:
             return render(request, "Myadmin/edit_table.html", locals())
 
+
 def table_delete(request, app_name, table_name, table_id):
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
-    models.Customer.objects.filter(id=1)
+    # models.Customer.objects.filter(id=1)
     table_obj = obj_all_model_and_display.model.objects.get(id=table_id)
-    if request.method == "GET":
-        return render(request, "Myadmin/table_delete.html", locals())
-    elif request.method == "POST":
-        return redirect(request.path.replace('/'+table_id+'/change/',''))
+    if request.method == "POST":
+        table_obj.delete()
+        return redirect(request.path.replace('/' + table_id + '/delete/', ''))
     else:
-        return render(request, "Myadmin/edit_table.html", locals())
+        return render(request, "Myadmin/table_delete.html", locals())
 
 
 def table_filter(request, admin_class):
@@ -96,7 +97,8 @@ def table_filter(request, admin_class):
     # print admin_class.model.objects.filter(**filter_conditions),filter_conditions
     # print filter_conditions
     # {u'source': u'1', u'consultant': u'2'} 有值的才加到字典中。
-    return admin_class.model.objects.filter(**filter_conditions).order_by(admin_class.ordering or '-id'), filter_conditions
+    return admin_class.model.objects.filter(**filter_conditions).order_by(
+        admin_class.ordering or '-id'), filter_conditions
 
 
 def show_table(request, app_name, table_name):
