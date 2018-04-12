@@ -106,6 +106,21 @@ def show_table(request, app_name, table_name):
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
     # 拿到model对象
     all_obj_django = obj_all_model_and_display.model.objects.all()
+
+    if request.method=="POST":
+        # print request.POST
+        action=request.POST.get('action','')
+        selected_ids=request.POST.get('selected_ids','')
+        if selected_ids:
+            selected_objs=obj_all_model_and_display.model.objects.filter(id__in=selected_ids.split(','))
+            # print selected_objs
+        else:
+            raise KeyError("No object selected")
+        if hasattr(obj_all_model_and_display,action):
+            action_func=getattr(obj_all_model_and_display,action)
+            # print obj_all_model_and_display
+            request._admin_action = action
+            return action_func(obj_all_model_and_display(),request,selected_objs)
     object_list, filter_condtions = table_filter(request, obj_all_model_and_display)
     order = request.GET.get("o", None)
     if order:

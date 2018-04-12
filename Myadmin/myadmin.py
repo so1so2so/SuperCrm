@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # _*_ coding:utf-8 _*_
 from crm import models
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
 
 enable_admins = {}
 
@@ -17,12 +17,18 @@ class BaseAdmin(object):
     def delete_selected_objs(self, request, querysets):
         app_name = self.model._meta.app_label
         table_name = self.model._meta.model_name
-        print("--->delete_selected_objs", self, request, querysets)
-        if request.POST.get("delete_confirm") == "yes":
-            querysets.delete()
-            return redirect("/king_admin/%s/%s/" % (app_name, table_name))
+
+        # print app_name ,table_name
+        # return HttpResponse('111')
+        # print("--->delete_selected_objs", self, request, querysets)
+        if request.method == "POST":
+            print request.POST
+            if request.POST.get("delete_confirm")=="yes":
+                querysets.delete()
+                return redirect("/Myadmin/%s/%s" % (app_name, table_name))
         selected_ids = ','.join([str(i.id) for i in querysets])
-        return render(request, "Myadmin/table_delete.html", {"objs": querysets,
+        # print selected_ids
+        return render(request, "Myadmin/table_delete.html", {"table_obj": querysets,
                                                              "admin_class": self,
                                                              "app_name": app_name,
                                                              "table_name": table_name,
@@ -48,6 +54,7 @@ class CusterAdmin(BaseAdmin):
     filter_horizontal = ('tags',)
     # ordering = 'qq'
     # model= models.Customer
+    actions = ["delete_selected_objs","test"]
 
 
 class ClassListAdmin(BaseAdmin):
