@@ -13,6 +13,7 @@ class BaseAdmin(object):
     search_fields = []
     ordering = None
     actions = ["delete_selected_objs", ]
+    readonly_fields = []
 
     def delete_selected_objs(self, request, querysets):
         app_name = self.model._meta.app_label
@@ -23,7 +24,7 @@ class BaseAdmin(object):
         # print("--->delete_selected_objs", self, request, querysets)
         if request.method == "POST":
             print request.POST
-            if request.POST.get("delete_confirm")=="yes":
+            if request.POST.get("delete_confirm") == "yes":
                 querysets.delete()
                 return redirect("/Myadmin/%s/%s" % (app_name, table_name))
         selected_ids = ','.join([str(i.id) for i in querysets])
@@ -51,15 +52,17 @@ class CusterAdmin(BaseAdmin):
     list_filters = ['source', 'consultant', 'consult_course', 'status', 'tags']
     list_per_page = 10
     search_fields = ['qq', 'consultant__name']
-    filter_horizontal = ('tags',)
+    # filter_horizontal = ('tags',)
     # ordering = 'qq'
     # model= models.Customer
-    actions = ["delete_selected_objs","test"]
+    actions = ["delete_selected_objs", "test"]
+    readonly_fields = ['qq', 'phone', 'status', 'consultant',]
 
 
 class ClassListAdmin(BaseAdmin):
     list_display = ["id", "semester", "class_type", "start_date"]
     list_filters = ['class_type']
+    filter_horizontal = ['teachers']
 
 
 class Myuser(BaseAdmin):

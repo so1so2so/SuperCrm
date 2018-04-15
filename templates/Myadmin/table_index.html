@@ -27,6 +27,7 @@
 
 <div class="container-fluid">
     <div class="row">
+    {% block rigth %}
         <div class="col-sm-3 col-md-2 sidebar">
         {% for app_name,table_obj_all in obj_all.items %}
             <ul class="nav nav-sidebar">
@@ -37,6 +38,7 @@
             </ul>
         {% endfor %}
         </div>
+        {% endblock %}
     {% block center %}
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
             <h2 class="sub-header">数据维护</h2>

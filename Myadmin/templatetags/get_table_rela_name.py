@@ -232,8 +232,8 @@ def recursive_related_objs_lookup(objs):
 @register.simple_tag
 def display_obj_related(objs):
     '''把对象及所有相关联的数据取出来'''
-    # objs = [objs, ]  # fake
+    objs = [objs, ]  # fake
     if objs:
-        model_class = objs[0]._meta.model  # <class 'crm.models.Customer'>
-        mode_name = objs[0]._meta.model_name  # customer
+        # model_class = objs[0]._meta.model  # <class 'crm.models.Customer'>
+        # mode_name = objs[0]._meta.model_name  # customer
         return mark_safe(recursive_related_objs_lookup(objs))

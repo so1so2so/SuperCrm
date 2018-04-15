@@ -59,6 +59,20 @@ def table_edit(request, app_name, table_name, table_id):
         form_obj = new_model_form(instance=table_obj)
         return render(request, "Myadmin/edit_table.html", locals())
     elif request.method == "POST":
+        # print request.POST
+        """
+        这种方法不好, 外键之类的会拿到对象 用js获取值 直接提交最好
+        """
+        # post_date=request.POST.copy()
+        # for filed in obj_all_model_and_display.readonly_fields:
+        #     if hasattr(table_obj, filed):
+        #         filed_val = getattr(table_obj, filed)
+        #         post_date[filed] = filed_val
+        #     else:
+        #         raise KeyError("the filed is not rigth")
+        # print post_date
+        # form_obj = new_model_form(post_date, instance=table_obj)
+        #
         form_obj = new_model_form(request.POST, instance=table_obj)
         if form_obj.is_valid():
             form_obj.save()
@@ -107,20 +121,20 @@ def show_table(request, app_name, table_name):
     # 拿到model对象
     all_obj_django = obj_all_model_and_display.model.objects.all()
 
-    if request.method=="POST":
+    if request.method == "POST":
         # print request.POST
-        action=request.POST.get('action','')
-        selected_ids=request.POST.get('selected_ids','')
+        action = request.POST.get('action', '')
+        selected_ids = request.POST.get('selected_ids', '')
         if selected_ids:
-            selected_objs=obj_all_model_and_display.model.objects.filter(id__in=selected_ids.split(','))
+            selected_objs = obj_all_model_and_display.model.objects.filter(id__in=selected_ids.split(','))
             # print selected_objs
         else:
             raise KeyError("No object selected")
-        if hasattr(obj_all_model_and_display,action):
-            action_func=getattr(obj_all_model_and_display,action)
+        if hasattr(obj_all_model_and_display, action):
+            action_func = getattr(obj_all_model_and_display, action)
             # print obj_all_model_and_display
             request._admin_action = action
-            return action_func(obj_all_model_and_display(),request,selected_objs)
+            return action_func(obj_all_model_and_display(), request, selected_objs)
     object_list, filter_condtions = table_filter(request, obj_all_model_and_display)
     order = request.GET.get("o", None)
     if order:

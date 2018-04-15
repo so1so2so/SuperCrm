@@ -13,7 +13,7 @@ class MyCustomer(admin.ModelAdmin):
     filter_horizontal = ('tags',)
     list_editable = ('status',)
     list_per_page = 5
-
+    readonly_fields = ('qq','content')
 
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'name')
