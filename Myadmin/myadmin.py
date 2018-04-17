@@ -2,8 +2,10 @@
 # _*_ coding:utf-8 _*_
 from crm import models
 from django.shortcuts import render, redirect, HttpResponse
+from  django.forms import ValidationError
 
 enable_admins = {}
+from django.utils.translation import ugettext as _
 
 
 class BaseAdmin(object):
@@ -37,6 +39,14 @@ class BaseAdmin(object):
                                                              "action": request._admin_action
                                                              })
 
+    def default_form_validation(self):
+        '''用户可以在此进行自定义的表单验证，相当于django form的clean方法'''
+        pass
+
+    # def clean_name(self):
+    #     """单个字段的验证"""
+    #     pass
+
 
 class UserProfileAdmin(BaseAdmin):
     list_display = ["id", "name", "roles"]
@@ -52,11 +62,28 @@ class CusterAdmin(BaseAdmin):
     list_filters = ['source', 'consultant', 'consult_course', 'status', 'tags']
     list_per_page = 10
     search_fields = ['qq', 'consultant__name']
-    # filter_horizontal = ('tags',)
+    filter_horizontal = ('tags',)
     # ordering = 'qq'
     # model= models.Customer
-    actions = ["delete_selected_objs", "test"]
-    readonly_fields = ['qq', 'phone', 'status', 'consultant',]
+    actions = ["delete_selected_objs", "test",]
+    readonly_fields = ['qq', 'phone', 'status', 'consultant', 'tags',]
+
+    def default_form_validation(self, another_self):
+        # print("-----customer validation ",name.instance)
+        consult_content = another_self.cleaned_data.get("content", '')
+        # print consult_content
+        if len(consult_content) < 15:
+            return ValidationError(
+                ('Field %(field)s 咨询内容记录不能少于15个字符'),
+                code='invalid',
+                params={'field': "content", },
+            )
+            # Myadmin.myadmin.CusterAdmin object at 0x06B18AF0>
+
+    # def clean_name(self):
+    #     print("name clean validation:", self.cleaned_data["name"])
+    #     if not self.cleaned_data["name"]:
+    #         self.add_error('name', "cannot be null")
 
 
 class ClassListAdmin(BaseAdmin):

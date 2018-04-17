@@ -37,6 +37,7 @@ def show_app(request, app_name):
 
 def table_add(request, app_name, table_name):
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
+    obj_all_model_and_display.is_add_form=True
     new_model_form = create_model_form(request, obj_all_model_and_display)
     if request.method == "GET":
         form_obj = new_model_form()

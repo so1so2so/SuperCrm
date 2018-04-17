@@ -7,14 +7,21 @@ str=65-90,97-122
 """
 daxie = range(65, 90)
 daxie += range(97, 123)
-
+import sys
 # for i in daxie:
 #     print chr(i)
 
 
-def check_str():
-    aimput=str(input("请输入密码"))
-    for i in aimput:
-        num=ord(i)
-        print num
-check_str()
+class abc():
+    def lsit(self,d):
+        return d
+
+g=getattr(abc,'lsit')
+s= setattr(abc,'a',g)
+# print g
+# print abc.a
+try:
+    d= sys.argv[1]
+    print d
+except:
+    print "请输入命令行参数"
