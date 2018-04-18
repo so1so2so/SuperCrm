@@ -35,7 +35,7 @@ class Customer(models.Model):
     tags = models.ManyToManyField("Tag", blank=True, verbose_name="标签")
 
     def __unicode__(self):
-        return self.name
+        return self.qq
 
     class Meta:
         verbose_name = "客户表(学生)"
@@ -242,6 +242,8 @@ class Role(models.Model):
 class Menu(models.Model):
     """菜单"""
     name = models.CharField(max_length=32)
+    url_type_choices = ((0,'alias'),(1,'absolute_url'))
+    url_type = models.SmallIntegerField(choices=url_type_choices,default=0)
     url_name = models.CharField(max_length=64)
 
     def __unicode__(self):

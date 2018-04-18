@@ -16,36 +16,43 @@ class BaseAdmin(object):
     ordering = None
     actions = ["delete_selected_objs", ]
     readonly_fields = []
+    readonly_tabs = False
 
     def delete_selected_objs(self, request, querysets):
         app_name = self.model._meta.app_label
         table_name = self.model._meta.model_name
 
-        # print app_name ,table_name
+        print app_name, table_name
         # return HttpResponse('111')
         # print("--->delete_selected_objs", self, request, querysets)
+        if self.readonly_tabs:
+            error = "不能删除只读的表"
+        else:
+            error=""
         if request.method == "POST":
             print request.POST
-            if request.POST.get("delete_confirm") == "yes":
-                querysets.delete()
-                return redirect("/Myadmin/%s/%s" % (app_name, table_name))
+            if not self.readonly_tabs:
+                if request.POST.get("delete_confirm") == "yes":
+                    querysets.delete()
+                    return redirect("/Myadmin/%s/%s" % (app_name, table_name))
         selected_ids = ','.join([str(i.id) for i in querysets])
         # print selected_ids
         return render(request, "Myadmin/table_delete.html", {"table_obj": querysets,
-                                                             "admin_class": self,
+                                                             "obj_all_model_and_display": self,
                                                              "app_name": app_name,
                                                              "table_name": table_name,
                                                              "selected_ids": selected_ids,
-                                                             "action": request._admin_action
+                                                             "action": request._admin_action,
+                                                             "error":error,
                                                              })
 
     def default_form_validation(self):
         '''用户可以在此进行自定义的表单验证，相当于django form的clean方法'''
         pass
 
-    # def clean_name(self):
-    #     """单个字段的验证"""
-    #     pass
+        # def clean_name(self):
+        #     """单个字段的验证"""
+        #     pass
 
 
 class UserProfileAdmin(BaseAdmin):
@@ -65,8 +72,9 @@ class CusterAdmin(BaseAdmin):
     filter_horizontal = ('tags',)
     # ordering = 'qq'
     # model= models.Customer
-    actions = ["delete_selected_objs", "test",]
-    readonly_fields = ['qq', 'phone', 'status', 'consultant', 'tags',]
+    actions = ["delete_selected_objs", "test", ]
+    readonly_fields = ['qq', 'phone', 'status', 'consultant', 'tags', ]
+    # readonly_tabs = True
 
     def default_form_validation(self, another_self):
         # print("-----customer validation ",name.instance)
@@ -80,10 +88,10 @@ class CusterAdmin(BaseAdmin):
             )
             # Myadmin.myadmin.CusterAdmin object at 0x06B18AF0>
 
-    # def clean_name(self):
-    #     print("name clean validation:", self.cleaned_data["name"])
-    #     if not self.cleaned_data["name"]:
-    #         self.add_error('name', "cannot be null")
+            # def clean_name(self):
+            #     print("name clean validation:", self.cleaned_data["name"])
+            #     if not self.cleaned_data["name"]:
+            #         self.add_error('name', "cannot be null")
 
 
 class ClassListAdmin(BaseAdmin):

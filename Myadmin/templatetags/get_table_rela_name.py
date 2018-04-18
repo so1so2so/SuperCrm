@@ -174,6 +174,7 @@ def get_select_m2m_list(form_obj, field):
 
 
 def recursive_related_objs_lookup(objs):
+    print "objs",objs
     # model_name = objs[0]._meta.model_name
     ul_ele = "<ul>"
     for obj in objs:
@@ -232,8 +233,8 @@ def recursive_related_objs_lookup(objs):
 @register.simple_tag
 def display_obj_related(objs):
     '''把对象及所有相关联的数据取出来'''
-    objs = [objs, ]  # fake
-    if objs:
+    # objs = [objs]  # fake
+    # if objs:
         # model_class = objs[0]._meta.model  # <class 'crm.models.Customer'>
         # mode_name = objs[0]._meta.model_name  # customer
-        return mark_safe(recursive_related_objs_lookup(objs))
+    return mark_safe(recursive_related_objs_lookup(objs))

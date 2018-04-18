@@ -38,15 +38,15 @@
                                             {%  get_all_m2m_list obj_all_model_and_display field  form_obj as  m2m_all_list%}
                                         <select multiple class="filter-select-box" id="id_{{ field.name }}_from">
                                         <span style="color: red">{{ field.errors.as_text }}</span>
-                                    {% if field.name in obj_all_model_and_display.readonly_fields %}
-
-                                            {% for obj in m2m_all_list %}
-                        <option  value="{{ obj.id }}" disabled > {{ obj }}</option>
-                                            {% endfor %}
-                                        {% else %}
-                                        {% for obj in m2m_all_list %}
-            <option  value="{{ obj.id }}" ondblclick="MoveEleTo(this,'id_{{ field.name }}_to','id_{{ field.name }}_from')"> {{ obj }}</option>
-                                                {% endfor %}
+{#                                         判断是否是只读并且是不是添加的表单#}
+                                    {% if field.name in obj_all_model_and_display.readonly_fields and not obj_all_model_and_display.is_add_form   %}
+                                                        {% for obj in m2m_all_list %}
+                                                                 <option  value="{{ obj.id }}" disabled > {{ obj }}</option>
+                                                        {% endfor %}
+                                    {% else %}
+                                                        {% for obj in m2m_all_list %}
+                            <option  value="{{ obj.id }}" ondblclick="MoveEleTo(this,'id_{{ field.name }}_to','id_{{ field.name }}_from')"> {{ obj }}</option>
+                                                                {% endfor %}
                                     {% endif %}
                                         </select>
                                     </div>
@@ -57,15 +57,16 @@
                                     <div class="col-md-5">
                                         {% get_select_m2m_list form_obj field as m2m_select_list %}
                                         <select tag='chosen_list' multiple class="filter-select-box" id="id_{{ field.name }}_to" name="{{ field.name }}">
-                                        {% if field.name in obj_all_model_and_display.readonly_fields %}
-                                             {% for obj in m2m_select_list %}
-                                             <option value="{{ obj.id }}" disabled> {{ obj }}</option>
-                                            {% endfor %}
-                                            {% else %}
-                                              {% for obj in m2m_select_list %}
-                                                  <option value="{{ obj.id }}" ondblclick="MoveEleTo(this,'id_{{ field.name }}_from','id_{{ field.name }}_to')"> {{ obj }}</option>
-                                            {% endfor %}
-                                            {% endif %}
+{#                                        判断是否是只读并且是不是添加的表单#}
+                                        {% if field.name in obj_all_model_and_display.readonly_fields and not admin_class.is_add_form %}
+                                                     {% for obj in m2m_select_list %}
+                                                     <option value="{{ obj.id }}" disabled> {{ obj }}</option>
+                                                    {% endfor %}
+                                        {% else %}
+                                                      {% for obj in m2m_select_list %}
+                                                          <option value="{{ obj.id }}" ondblclick="MoveEleTo(this,'id_{{ field.name }}_from','id_{{ field.name }}_to')"> {{ obj }}</option>
+                                                    {% endfor %}
+                                        {% endif %}
                                         </select>
 {#                                        {{ form_obj.instance.tags.all }}#}
 {#                                    {% print_obj_  form_obj %}#}
@@ -76,8 +77,11 @@
                             </div>
                         </div>
                     {% endfor %}
+{#                表只读#}
+                {% if not obj_all_model_and_display.readonly_tabs %}
                     <div class="form-group">
                         <div class="col-sm-10 ">
+
                         {% if table_id  %}
                             <button type="button" class="btn btn-danger pull-left"><a href="{% url 'table_delete' app_name table_name table_id %}">Delete</a></button>
                             {% endif %}
@@ -85,6 +89,7 @@
                         </div>
 
                     </div>
+                {% endif %}
                 </form>
             <script>
                 function  MoveEleTo(ele,target_id,new_target_id) {

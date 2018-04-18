@@ -16,11 +16,17 @@
         <div class="bs-example" data-example-id="table-within-panel">
             <div class="panel panel-default">
                 <!-- Default panel contents -->
-               <!-- <div class="panel-heading">选择{{ 1 }}来修改</div>-->
-    {% display_obj_related table_obj  %}
-
+                <!-- <div class="panel-heading">选择{{ 1 }}来修改</div>-->
+{#            判断是否是只读的#}
+                {% if not obj_all_model_and_display.readonly_tabs %}
+                        {% display_obj_related table_obj %}
+                {% else %}
+                        <span style="color: red">{{ error }}</span>
+                {% endif %}
    <form method="post">{% csrf_token %}
+       {% if not obj_all_model_and_display.readonly_tabs %}
         <input type="submit" class="btn btn-danger" value="Yes,I'm sure">
+       {% endif %}
         <input type="hidden" value="yes" name="delete_confirm">
         <input type="hidden" value="{{ selected_ids }}" name="selected_ids">
         <input type="hidden" value="{{ action }}" name="action">

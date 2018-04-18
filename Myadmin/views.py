@@ -86,10 +86,15 @@ def table_edit(request, app_name, table_name, table_id):
 def table_delete(request, app_name, table_name, table_id):
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
     # models.Customer.objects.filter(id=1)
-    table_obj = obj_all_model_and_display.model.objects.get(id=table_id)
+    table_obj = obj_all_model_and_display.model.objects.filter(id=table_id)
+    print table_obj
+    error='不能删除只读的表'
     if request.method == "POST":
-        table_obj.delete()
-        return redirect(request.path.replace('/' + table_id + '/delete/', ''))
+        if not obj_all_model_and_display.readonly_tabs:
+            table_obj.delete()
+            return redirect(request.path.replace('/' + table_id + '/delete/', ''))
+        else:
+            return render(request, "Myadmin/table_delete.html", locals())
     else:
         return render(request, "Myadmin/table_delete.html", locals())
 
@@ -124,11 +129,11 @@ def show_table(request, app_name, table_name):
 
     if request.method == "POST":
         # print request.POST
-        action = request.POST.get('action', '')
-        selected_ids = request.POST.get('selected_ids', '')
+        action = request.POST.get('action')
+        selected_ids = request.POST.get('selected_ids')
+        print selected_ids.split(',')
         if selected_ids:
             selected_objs = obj_all_model_and_display.model.objects.filter(id__in=selected_ids.split(','))
-            # print selected_objs
         else:
             raise KeyError("No object selected")
         if hasattr(obj_all_model_and_display, action):

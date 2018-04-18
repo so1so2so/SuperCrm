@@ -31,7 +31,7 @@ def create_model_form(request, obj_all_model_and_display):
             # if field_name in obj_all_model_and_display.readonly_fields:
             #     field_obj.widget.attrs['disabled'] = 'disabled'
                 # if
-            print hasattr(obj_all_model_and_display, "is_add_form")
+            # print hasattr(obj_all_model_and_display, "is_add_form")
             if not hasattr(obj_all_model_and_display, "is_add_form"):  # 代表这是添加form,不需要disabled
                 if field_name in obj_all_model_and_display.readonly_fields:
                     field_obj.widget.attrs['disabled'] = 'disabled'
@@ -81,6 +81,7 @@ def create_model_form(request, obj_all_model_and_display):
                         #     # ))
                         #     self.add_error(filed,"readonly field")
                         # continue #m2m
+        # 给表只读
                 # print filed_val ,"1"
                 # print filed_val_from_web,"2"
                 # print filed, filed_val, filed_val_from_web
@@ -90,6 +91,8 @@ def create_model_form(request, obj_all_model_and_display):
                                                       params={'value': filed, 'val': filed_val}))
                     # print self.instance.qq,type(self.instance)
                     # 用户自己的验证
+        if obj_all_model_and_display.readonly_tabs:
+            error_list.append(ValidationError("这张表是只读的,不能编辑"))
             response = obj_all_model_and_display().default_form_validation(
                 self)  # 把self当做参数传递进行 another_self default_form_validation(self,another_self):
             if response:
