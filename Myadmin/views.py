@@ -170,3 +170,23 @@ def show_table(request, app_name, table_name):
         # If page is out of range (e.g. 9999), deliver last page of results.
         query_sets = paginator.page(paginator.num_pages)
     return render(request, "Myadmin/show_table.html", locals())
+
+
+def password_reset(request, app_name, table_name,table_id):
+    obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
+    new_model_form = create_model_form(request, obj_all_model_and_display)
+    table_obj = obj_all_model_and_display.model.objects.get(id=table_id)
+    error={}
+    if request.method=="POST":
+        _passwd1=request.POST.get("passwd1")
+        _passwd2=request.POST.get("passwd2")
+        if _passwd1==_passwd2:
+            if len(_passwd1)>6:
+                table_obj.set_password(_passwd1)
+                table_obj.save()
+                return redirect(request.path.rstrip("passwortd/"))
+            else:
+                error["password_too_short"]="密码长度太短"
+        else:
+            error["invalid"]="两次输入的密码必须一致"
+    return render(request, "Myadmin/password_reset.html", locals())

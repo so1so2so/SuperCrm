@@ -11,6 +11,7 @@ class CustomerModelForm(ModelForm):
     class Meta:
         model = models.Customer
         fields = "__all__"
+        # exclude=""
 
 
 d = type("Foo", (object,), {'name': 123})
@@ -28,8 +29,8 @@ def create_model_form(request, obj_all_model_and_display):
             field_obj.widget.attrs['class'] = 'form-control'
             if hasattr(field_obj, 'max_length'):
                 field_obj.widget.attrs['maxlength'] = getattr(field_obj, 'max_length')
-            # if field_name in obj_all_model_and_display.readonly_fields:
-            #     field_obj.widget.attrs['disabled'] = 'disabled'
+                # if field_name in obj_all_model_and_display.readonly_fields:
+                #     field_obj.widget.attrs['disabled'] = 'disabled'
                 # if
             # print hasattr(obj_all_model_and_display, "is_add_form")
             if not hasattr(obj_all_model_and_display, "is_add_form"):  # 代表这是添加form,不需要disabled
@@ -81,7 +82,7 @@ def create_model_form(request, obj_all_model_and_display):
                         #     # ))
                         #     self.add_error(filed,"readonly field")
                         # continue #m2m
-        # 给表只读
+                        # 给表只读
                 # print filed_val ,"1"
                 # print filed_val_from_web,"2"
                 # print filed, filed_val, filed_val_from_web
@@ -104,6 +105,7 @@ def create_model_form(request, obj_all_model_and_display):
     class Meta:
         model = obj_all_model_and_display.model
         fields = "__all__"
+        exclude = obj_all_model_and_display.exclude_fileds
 
     # attr = {'Meta': Meta, 'clean':default_clean}
     attr = {'Meta': Meta, '__new__': __new__, 'clean': default_clean}

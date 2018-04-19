@@ -72,7 +72,7 @@
 {#                                    {% print_obj_  form_obj %}#}
                                     </div>
                                 {% else %}
-                                    {{ field }}<span>{{ field.errors.as_text }}</span>
+                                    {{ field }}<span style="">{{ field.help_text }}</span><span>{{ field.errors.as_text }}</span>
                                 {% endif %}
                             </div>
                         </div>

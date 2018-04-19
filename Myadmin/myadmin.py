@@ -17,7 +17,8 @@ class BaseAdmin(object):
     actions = ["delete_selected_objs", ]
     readonly_fields = []
     readonly_tabs = False
-
+    filter_horizontal=[]
+    exclude_fileds=[]
     def delete_selected_objs(self, request, querysets):
         app_name = self.model._meta.app_label
         table_name = self.model._meta.model_name
@@ -56,9 +57,10 @@ class BaseAdmin(object):
 
 
 class UserProfileAdmin(BaseAdmin):
-    list_display = ["id", "name", "roles"]
-
-
+    list_display = ["email", "name",]
+    readonly_fields = ["password"]
+    # filter_horizontal = ["user_permissions",]
+    exclude_fileds=("last_login",)
 class BaseisAdmin(BaseAdmin):
     list_display = ["id"]
 
