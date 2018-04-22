@@ -17,8 +17,9 @@ class BaseAdmin(object):
     actions = ["delete_selected_objs", ]
     readonly_fields = []
     readonly_tabs = False
-    filter_horizontal=[]
-    exclude_fileds=[]
+    filter_horizontal = []
+    exclude_fileds = []
+
     def delete_selected_objs(self, request, querysets):
         app_name = self.model._meta.app_label
         table_name = self.model._meta.model_name
@@ -29,7 +30,7 @@ class BaseAdmin(object):
         if self.readonly_tabs:
             error = "不能删除只读的表"
         else:
-            error=""
+            error = ""
         if request.method == "POST":
             print request.POST
             if not self.readonly_tabs:
@@ -44,7 +45,7 @@ class BaseAdmin(object):
                                                              "table_name": table_name,
                                                              "selected_ids": selected_ids,
                                                              "action": request._admin_action,
-                                                             "error":error,
+                                                             "error": error,
                                                              })
 
     def default_form_validation(self):
@@ -57,10 +58,12 @@ class BaseAdmin(object):
 
 
 class UserProfileAdmin(BaseAdmin):
-    list_display = ["email", "name",]
+    list_display = ["email", "name", ]
     readonly_fields = ["password"]
     # filter_horizontal = ["user_permissions",]
-    exclude_fileds=("last_login",)
+    exclude_fileds = ("last_login",)
+
+
 class BaseisAdmin(BaseAdmin):
     list_display = ["id"]
 
@@ -75,8 +78,12 @@ class CusterAdmin(BaseAdmin):
     # ordering = 'qq'
     # model= models.Customer
     actions = ["delete_selected_objs", "test", ]
-    readonly_fields = ['qq', 'phone', 'status', 'consultant', 'tags', ]
+    readonly_fields = [ 'status', ]
+    field_classes=['enrollment']
     # readonly_tabs = True
+    # def field_classes(self):
+    #     print self.field_classes
+
 
     def default_form_validation(self, another_self):
         # print("-----customer validation ",name.instance)

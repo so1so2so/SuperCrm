@@ -6,15 +6,18 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from Myadmin import myadmin
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 
 # from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 d_2 = {"crm": {"userprofile": "admin_class"}}
 from crm import models
 from django.utils.timezone import datetime, timedelta
 from forms import create_model_form
+from crm.forms import EnrollForm
 
 
 # Create your views here.
+@login_required
 def index(request):
     # for i in range(20):
     #     models.Customer.objects.create(
@@ -37,7 +40,7 @@ def show_app(request, app_name):
 
 def table_add(request, app_name, table_name):
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
-    obj_all_model_and_display.is_add_form=True
+    obj_all_model_and_display.is_add_form = True
     new_model_form = create_model_form(request, obj_all_model_and_display)
     if request.method == "GET":
         form_obj = new_model_form()
@@ -75,6 +78,7 @@ def table_edit(request, app_name, table_name, table_id):
         # form_obj = new_model_form(post_date, instance=table_obj)
         #
         form_obj = new_model_form(request.POST, instance=table_obj)
+        print form_obj.errors
         if form_obj.is_valid():
             form_obj.save()
             # print request.path
@@ -88,7 +92,7 @@ def table_delete(request, app_name, table_name, table_id):
     # models.Customer.objects.filter(id=1)
     table_obj = obj_all_model_and_display.model.objects.filter(id=table_id)
     print table_obj
-    error='不能删除只读的表'
+    error = '不能删除只读的表'
     if request.method == "POST":
         if not obj_all_model_and_display.readonly_tabs:
             table_obj.delete()
@@ -123,6 +127,7 @@ def table_filter(request, admin_class):
 
 def show_table(request, app_name, table_name):
     # 拿到admin_class对象
+    print request.user.name
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
     # 拿到model对象
     all_obj_django = obj_all_model_and_display.model.objects.all()
@@ -172,21 +177,36 @@ def show_table(request, app_name, table_name):
     return render(request, "Myadmin/show_table.html", locals())
 
 
-def password_reset(request, app_name, table_name,table_id):
+def password_reset(request, app_name, table_name, table_id):
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
     new_model_form = create_model_form(request, obj_all_model_and_display)
     table_obj = obj_all_model_and_display.model.objects.get(id=table_id)
-    error={}
-    if request.method=="POST":
-        _passwd1=request.POST.get("passwd1")
-        _passwd2=request.POST.get("passwd2")
-        if _passwd1==_passwd2:
-            if len(_passwd1)>6:
+    error = {}
+    if request.method == "POST":
+        _passwd1 = request.POST.get("passwd1")
+        _passwd2 = request.POST.get("passwd2")
+        if _passwd1 == _passwd2:
+            if len(_passwd1) > 6:
                 table_obj.set_password(_passwd1)
                 table_obj.save()
                 return redirect(request.path.rstrip("passwortd/"))
             else:
-                error["password_too_short"]="密码长度太短"
+                error["password_too_short"] = "密码长度太短"
         else:
-            error["invalid"]="两次输入的密码必须一致"
+            error["invalid"] = "两次输入的密码必须一致"
     return render(request, "Myadmin/password_reset.html", locals())
+
+
+def enrollment(request, app_name, table_name, table_id):
+    obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
+    new_model_form = create_model_form(request, obj_all_model_and_display)
+    table_obj = obj_all_model_and_display.model.objects.get(id=table_id)
+    if request.method == "POST":
+        emMd = EnrollForm(request.POST)
+        if emMd.is_valid():
+            # print emMd.cleaned_data
+            eroll_obj=models.Enrollment.objects.create(**emMd.cleaned_data)
+            # print eroll_obj
+    else:
+        emMd = EnrollForm()
+    return render(request, 'Myadmin/enrollment.html', locals())

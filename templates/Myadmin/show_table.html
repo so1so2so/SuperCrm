@@ -17,7 +17,7 @@
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav navbar-right">
 
-                    <li><a href="#">{{ request.user.username }}</a></li>
+                    <li><a href="#">{{ request.user.name }}</a></li>
                 </ul>
 
             </div>
@@ -34,6 +34,7 @@
                 </ul>
             </div>
             <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+                        {% block centss %}
                     {% if not obj_all_model_and_display.readonly_tabs %}
                 <h1 class="page-header"><a href="{% url 'table_add'  app_name table_name %}">增加{{ table_name }}表数据</a>
                 </h1>
@@ -91,9 +92,17 @@
                                 <th><input type="checkbox"  style="width: 35px" onclick="myselectall(this)">
                                 </th>
                                 {% for column in obj_all_model_and_display.list_display %}
-                                    <th><a href="?o={% if orders %}{{ column }}{% else %}{% change_order column %}{% endif %}">{{ column }}
-                                        {% if orders  and flage %} ^{% else %}v{% endif %}</a></th>
+                                    <th><a href="?o={% if orders %}{{ column }}{% else %}{% change_order column %}{% endif %}">
+                                        {% get_filed_chinese_name column obj_all_model_and_display %}
+                                        {% if orders  and flage %} ^{% else %}v{% endif %}</a>
+                                    </th>
                                 {% endfor %}
+                            {% if obj_all_model_and_display.field_classes %}
+                            {% for name in obj_all_model_and_display.field_classes %}
+                                    <th><a href="#">{{ name }}</a></th>
+                            {% endfor %}
+                            {% endif %}
+
                             </tr>
                             </thead>
                             <tfoot>
@@ -107,8 +116,16 @@
                                     <td><input  tag="obj_checkbox" type="checkbox" value="{{ one_obj_django.id }}">
                                     </td>
                                     {% build_table_row request one_obj_django obj_all_model_and_display %}
+                                            {% if obj_all_model_and_display.field_classes %}
+                                           {% for filed in obj_all_model_and_display.field_classes %}
+                                       <td>
+                                                    {% display_no_exist one_obj_django filed table_name %}
+                                       </td>
+                                            {% endfor %}
+                                {% endif %}
                                 </tr>
                             {% endfor %}
+
                             </tbody>
 
                         </table>
@@ -123,6 +140,7 @@
                                     {% render_page_ele loop_counter query_sets filter_condtions order search %}
                                 {% endfor %}
 
+
                                 {% if query_sets.has_next %}
                                     <li class=""><a href="?page={{ query_sets.next_page_number }}&o={% ifequal order True %}{% endifequal %}&q={% ifequal search True %}{% endifequal %}">下页</a></li>
                                 {% endif %}
@@ -131,6 +149,7 @@
                         </nav>
                     </div>
                 </div>
+            {% endblock %}
             </div>
         </div>
     </div>

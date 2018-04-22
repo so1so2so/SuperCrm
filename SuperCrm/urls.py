@@ -15,8 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import url,include
 from django.contrib import admin
+import views
 import jet
 urlpatterns = [
+    url(r'^$', views.Mylogin,name="login"),
+    url(r'^logout$', views.Mylogout,name="logout"),
     url(r'^admin/', admin.site.urls),
     url(r'^crm/', include("crm.urls")),
     url(r'^students/', include("students.urls")),

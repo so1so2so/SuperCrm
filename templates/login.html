@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block body %}
+    <a href="{% url 'crm' %}"></a>
+    <form class="submit-row" action="{% url 'login' %}?next={{ next_url }}" method="POST">
+        {% csrf_token %}
+    <input type="text" class="form-actions" name="email">
+    <input type="text" name="passwd">
+    <input type="submit" value="提交">
+    </form>
+{% endblock %}

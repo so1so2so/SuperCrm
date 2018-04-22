@@ -106,6 +106,9 @@ def create_model_form(request, obj_all_model_and_display):
         model = obj_all_model_and_display.model
         fields = "__all__"
         exclude = obj_all_model_and_display.exclude_fileds
+        if hasattr(obj_all_model_and_display,'field_classes'):
+            field_classes=obj_all_model_and_display.field_classes
+
 
     # attr = {'Meta': Meta, 'clean':default_clean}
     attr = {'Meta': Meta, '__new__': __new__, 'clean': default_clean}

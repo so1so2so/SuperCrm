@@ -11,7 +11,6 @@ register = template.Library()
 @register.simple_tag
 def get_rela_name(table_obj):
     table_name = table_obj.model._meta.verbose_name_plural or table_obj.verbose_name
-
     if not table_name:
         table_name = table_obj.model._meta.model_mame
     return table_name
@@ -174,7 +173,7 @@ def get_select_m2m_list(form_obj, field):
 
 
 def recursive_related_objs_lookup(objs):
-    print "objs",objs
+    print "objs", objs
     # model_name = objs[0]._meta.model_name
     ul_ele = "<ul>"
     for obj in objs:
@@ -235,6 +234,25 @@ def display_obj_related(objs):
     '''把对象及所有相关联的数据取出来'''
     # objs = [objs]  # fake
     # if objs:
-        # model_class = objs[0]._meta.model  # <class 'crm.models.Customer'>
-        # mode_name = objs[0]._meta.model_name  # customer
+    # model_class = objs[0]._meta.model  # <class 'crm.models.Customer'>
+    # mode_name = objs[0]._meta.model_name  # customer
     return mark_safe(recursive_related_objs_lookup(objs))
+
+
+@register.simple_tag
+def display_no_exist(one_obj_django, filed,table_name):
+    return mark_safe('''<a href="%s/%s/%s">点击报名</a>''' % (str(table_name),one_obj_django.id, filed))
+
+
+@register.simple_tag
+def get_filed_chinese_name(column, obj_all_model_and_display):
+    """
+    models.Customer._meta.get_field('tags').verbose_name
+    :param column:
+    :param obj_all_model_and_display:
+    :return:
+    """
+    # print obj_all_model_and_display.model._meta.get_field('tags').verbose_name
+
+    chinese_chinses_obj = obj_all_model_and_display.model._meta.get_field(column)
+    return chinese_chinses_obj.verbose_name

@@ -25,7 +25,7 @@ class Customer(models.Model):
                       (6, '市场推广')
                       )
     # SmallIntegerField 小整数
-    source = models.SmallIntegerField(choices=source_choices)
+    source = models.SmallIntegerField(choices=source_choices,verbose_name="客户来源方式")
     referral_from = models.CharField(verbose_name="转介绍人qq", max_length=64, blank=True, null=True)
     content = models.TextField(verbose_name="咨询详情")
     status_choices = ((0, '已报名'),
@@ -305,7 +305,7 @@ class UserProfile(AbstractBaseUser,PermissionsMixin):
     name = models.CharField(max_length=32)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
-
+    roles = models.ManyToManyField("Role", blank=True)
     objects = UserProfileManager()
 
     USERNAME_FIELD = 'email'

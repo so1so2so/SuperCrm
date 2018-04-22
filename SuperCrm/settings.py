@@ -126,3 +126,5 @@ STATICFILES_DIRS = (
 
 # 使用自定义的用户认证
 AUTH_USER_MODEL = 'crm.UserProfile'
+# 默认未登录返还页面
+LOGIN_URL='/'
