@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crm',
+    'students',
     'Myadmin',
     # 'jet.dashboard',
     # 'jet',
@@ -128,3 +129,5 @@ STATICFILES_DIRS = (
 AUTH_USER_MODEL = 'crm.UserProfile'
 # 默认未登录返还页面
 LOGIN_URL='/'
+
+ENROLLED_DATA = "%s/enrolled_data/" % BASE_DIR

@@ -45,7 +45,7 @@
                             <select id="action_list" name="action" class="form-control" style="margin-left:15px">
                                 <option>-----------</option>
                                 {% for action in obj_all_model_and_display.actions %}
-                                <option value="{{ action }}">{{ action }}</option>
+                                <option value="{{ action }}">{% get_action_verbose_name obj_all_model_and_display action %}</option>
                                 {% endfor %}
                             </select>
 {#                            <input type="submit" value="提交" class="btn ">#}

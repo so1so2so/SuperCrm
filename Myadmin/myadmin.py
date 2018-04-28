@@ -47,7 +47,7 @@ class BaseAdmin(object):
                                                              "action": request._admin_action,
                                                              "error": error,
                                                              })
-
+    delete_selected_objs.display_name='选择批量删除'
     def default_form_validation(self):
         '''用户可以在此进行自定义的表单验证，相当于django form的clean方法'''
         pass
@@ -77,7 +77,7 @@ class CusterAdmin(BaseAdmin):
     filter_horizontal = ('tags',)
     # ordering = 'qq'
     # model= models.Customer
-    actions = ["delete_selected_objs", "test", ]
+    # actions = ["delete_selected_objs", ]
     readonly_fields = [ 'status', ]
     field_classes=['enrollment']
     # readonly_tabs = True
@@ -112,6 +112,35 @@ class ClassListAdmin(BaseAdmin):
 class Myuser(BaseAdmin):
     list_display = ['id']
 
+class AdminStudyRecord(BaseAdmin):
+    list_display = ('id','student' , 'course_record',)
+    # list_filters=('attendance','course_record',)
+    # list_editable = ('score','attendance',)
+class AdminCourseRecord(BaseAdmin):
+    list_display = ('from_class', 'teacher', 'day_num', 'has_homework',)
+    actions = ['make_published','delete_selected_objs',]
+
+    def make_published(self, request, queryset):
+        print self, request, queryset
+        if len(queryset) > 1:
+            return HttpResponse("只能选择一个班级")
+        new_obj_list=[]
+        for i in queryset[0].from_class.enrollment_set.all():
+            # 拿到学生ID
+            print i
+            new_obj_list.append(models.StudyRecord(
+                student=i,
+                attendance=0,
+                score=0,
+                course_record=queryset[0]
+            ))
+        try:
+            models.StudyRecord.objects.bulk_create(new_obj_list)
+        except Exception as e:
+            return HttpResponse("批量初始化记录失败,请检查改节课是否有对应的学习记录")
+        return redirect('/Myadmin/crm/studyrecord?course_record={classes}'.format(classes=queryset[0].id))
+    make_published.display_name = "初始化上课记录"
+
 
 # admin.site.register(models.Customer, CustomerAdmin)
 
@@ -144,7 +173,9 @@ def register(model_obj, admin_class=BaseisAdmin):
 register(models.Customer, CusterAdmin)
 register(models.UserProfile, UserProfileAdmin)
 register(models.ClassList, ClassListAdmin)
-register(models.StudyRecord)
+register(models.StudyRecord,AdminStudyRecord)
+register(models.CourseRecord,AdminCourseRecord)
+
 # register(models.Course)
 # register(models.Branch)
 # register(models.CourseRecord)

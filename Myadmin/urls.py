@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^(?P<app_name>\w+)/(?P<table_name>\w+)/(?P<table_id>\d+)/delete/$', views.table_delete,name="table_delete"),
     url(r'^(?P<app_name>\w+)/(?P<table_name>\w+)/(?P<table_id>\d+)/change/password$', views.password_reset,name="table_delete"),
     url(r'^(?P<app_name>\w+)/(?P<table_name>\w+)/(?P<table_id>\d+)/enrollment$', views.enrollment,name="enrollment"),
+    url(r'^(?P<app_name>\w+)/(?P<table_name>\w+)/registration/(?P<table_id>\d+)$', views.stu_registration,name="stu_registration"),
 ]

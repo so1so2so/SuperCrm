@@ -7,4 +7,5 @@ urlpatterns = [
     url(r'^teacher/', views.teacher,name="teacher"),
     url(r'^sale/', views.sale,name="sale"),
     url(r'^customer/', views.customer,name="customer"),
+    url(r'^payment/(?P<enroll_id>\d+)', views.payment,name="payment"),
 ]

@@ -39,7 +39,7 @@ class Customer(models.Model):
     tags = models.ManyToManyField("Tag", blank=True, verbose_name="标签")
 
     def __unicode__(self):
-        return self.qq
+        return self.name
 
     class Meta:
         verbose_name = "客户表(学生)"
@@ -82,10 +82,10 @@ class CustomerFollowUp(models.Model):
 
 class Course(models.Model):
     """ 课程表 """
-    name = models.CharField(max_length=64, unique=True)
-    price = models.PositiveSmallIntegerField(verbose_name="课程")
-    period = models.PositiveSmallIntegerField(verbose_name="周期(月)")
-    outline = models.TextField(verbose_name="大纲")
+    name = models.CharField(max_length=64, unique=True,verbose_name="课程名称")
+    price = models.PositiveSmallIntegerField(verbose_name="课程价格")
+    period = models.PositiveSmallIntegerField(verbose_name="上课周期(月)")
+    outline = models.TextField(verbose_name="课程大纲")
 
     def __unicode__(self):
         return self.name
@@ -121,9 +121,9 @@ class ClassList(models.Model):
     branch = models.ForeignKey("Branch", verbose_name="校区")
     course = models.ForeignKey("Course")
     teachers = models.ManyToManyField("UserProfile")
-
+    contract = models.ForeignKey("ContractTemplate",blank=True,null=True)
     def __unicode__(self):
-        return "%s %s %s" % (self.branch, self.course, self.semester)
+        return "%s %s 第%s期" % (self.branch, self.course, self.semester)
         # return "zhang"
 
     class Meta:
@@ -131,7 +131,13 @@ class ClassList(models.Model):
         unique_together = ('branch', 'course', 'semester')
         verbose_name_plural = "班级"
         verbose_name = "班级"
+class ContractTemplate(models.Model):
+    '''合同模版'''
+    name = models.CharField("合同名称",max_length=64,unique=True)
+    template = models.TextField()
 
+    def __unicode__(self):
+        return self.name
 
 class CourseRecord(models.Model):
     """上课记录"""
@@ -145,7 +151,7 @@ class CourseRecord(models.Model):
     from_class = models.ForeignKey("ClassList", verbose_name="班级")
 
     def __unicode__(self):
-        return "%s %s" % (self.from_class, self.day_num)
+        return "%s 第%s节" % (self.from_class, self.day_num)
 
     class Meta:
         unique_together = ("from_class", "day_num")
@@ -175,11 +181,11 @@ class StudyRecord(models.Model):
     score = models.SmallIntegerField(choices=score_choices, default=0, verbose_name="分数")
     memo = models.TextField(blank=True, null=True)
     date = models.DateField(auto_now_add=True)
-    course_record = models.ForeignKey("CourseRecord", verbose_name="上课记录")
-    student = models.ForeignKey("Enrollment")
+    course_record = models.ForeignKey("CourseRecord", verbose_name="课程名称")
+    student = models.ForeignKey("Enrollment",verbose_name="学生信息")
 
     def __unicode__(self):
-        return "%s %s %s" % (self.student, self.course_record, self.score)
+        return "%s--%s--得分%s" %(self.student,self.course_record,self.score)
 
     class Meta:
         unique_together = ('student', 'course_record')
@@ -196,7 +202,7 @@ class Enrollment(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
-        return "%s %s" % (self.customer, self.enrolled_class)
+        return "%s" % (self.customer,)
 
     class Meta:
         unique_together = ("customer", "enrolled_class")
@@ -205,10 +211,10 @@ class Enrollment(models.Model):
 
 class Payment(models.Model):
     """缴费记录"""
-    customer = models.ForeignKey("Customer")
+    customer = models.ForeignKey("Customer",verbose_name="客户名(qq)")
     course = models.ForeignKey("Course", verbose_name="所报课程")
     amount = models.PositiveIntegerField(verbose_name="数额", default=500)
-    consultant = models.ForeignKey("UserProfile")
+    consultant = models.ForeignKey("UserProfile",verbose_name="销售")
     date = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
@@ -307,7 +313,8 @@ class UserProfile(AbstractBaseUser,PermissionsMixin):
     is_admin = models.BooleanField(default=False)
     roles = models.ManyToManyField("Role", blank=True)
     objects = UserProfileManager()
-
+    stu_account = models.ForeignKey("Customer",verbose_name="关联学员账号",blank=True,null=True,
+                                    help_text="只有学员报名后方可为其创建账号")
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
 

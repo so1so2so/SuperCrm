@@ -7,13 +7,16 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from Myadmin import myadmin
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 
 # from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 d_2 = {"crm": {"userprofile": "admin_class"}}
-from crm import models
+from crm import models, forms
 from django.utils.timezone import datetime, timedelta
 from forms import create_model_form
-from crm.forms import EnrollForm
+from crm.forms import EnrollForm,PaymentForm
+import os
+from SuperCrm import settings
 
 
 # Create your views here.
@@ -201,12 +204,64 @@ def enrollment(request, app_name, table_name, table_id):
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
     new_model_form = create_model_form(request, obj_all_model_and_display)
     table_obj = obj_all_model_and_display.model.objects.get(id=table_id)
+    next_links = {}
+    enroll_obj_id=table_obj.enrollment_set.all()[0].id
     if request.method == "POST":
         emMd = EnrollForm(request.POST)
         if emMd.is_valid():
             # print emMd.cleaned_data
-            eroll_obj=models.Enrollment.objects.create(**emMd.cleaned_data)
-            # print eroll_obj
+            next_link = 'http://localhost:8000/Myadmin/crm/customer/registration/{enroll_obj_id}'
+            try:
+                # print table_name
+                emMd.cleaned_data[table_name] = table_obj
+                # print emMd.cleaned_data
+                eroll_obj = models.Enrollment.objects.create(**emMd.cleaned_data)
+                next_links["msg"] = next_link.format(enroll_obj_id=eroll_obj.id)
+                # next_link = 'http://localhost:8000/crm/customer/registration/{enroll_obj_id}/'
+            except IntegrityError as e:
+                emMd.add_error("__all__", "该用户已报名")
+                enroll_obj_id=table_obj.enrollment_set.all()[0].id
+                next_links["msg"] = next_link.format(enroll_obj_id=enroll_obj_id)
+                # print eroll_obj
     else:
         emMd = EnrollForm()
     return render(request, 'Myadmin/enrollment.html', locals())
+
+
+def stu_registration(request, app_name, table_name, table_id):
+    enroll_obj = models.Enrollment.objects.get(id=table_id)
+    status=0
+    if request.method == "POST":
+        if request.is_ajax():
+            # (u'ajax post, ', <MultiValueDict: {u'file': [<InMemoryUploadedFile: BigShare_18038_19689_1075688650.jpg (image/jpeg)>]}>)
+            print("ajax post, ", request.FILES)
+            enroll_data_dir = "%s/%s" % (settings.ENROLLED_DATA, table_id)
+            # J:\Djangostyle\SuperCrm/enrolled_data//10
+            print enroll_data_dir
+            if not os.path.exists(enroll_data_dir):
+                os.makedirs(enroll_data_dir)
+
+            for k, file_obj in request.FILES.items():
+                with open("%s/%s" % (enroll_data_dir, file_obj.name), "wb") as f:
+                    for chunk in file_obj.chunks():
+                        f.write(chunk)
+            return HttpResponse("success")
+        customer_form = forms.CustomerForm(request.POST, instance=enroll_obj.customer)
+        if customer_form.is_valid():
+            customer_form.save()
+            enroll_obj.contract_agreed = True
+            enroll_obj.save()
+            return render(request, "Myadmin/stu_registration.html", {"status": 1})
+    else:
+        # 用户已同意
+        if enroll_obj.contract_agreed == True:
+            status = 1
+        else:
+            status = 0
+        customer_form = forms.CustomerForm(instance=enroll_obj.customer)
+    return render(request, "Myadmin/stu_registration.html",
+                  {"customer_form": customer_form,
+                   "enroll_obj": enroll_obj,
+                   "status": status})
+
+

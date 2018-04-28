@@ -256,3 +256,13 @@ def get_filed_chinese_name(column, obj_all_model_and_display):
 
     chinese_chinses_obj = obj_all_model_and_display.model._meta.get_field(column)
     return chinese_chinses_obj.verbose_name
+@register.simple_tag
+def get_types(stra):
+    print stra.dispaly_name
+    return type(stra)
+
+@register.simple_tag
+def get_action_verbose_name(admin_class,action):
+    if hasattr(admin_class,action):
+        action_func = getattr(admin_class,action)
+        return  action_func.display_name if hasattr(action_func,'display_name') else action
