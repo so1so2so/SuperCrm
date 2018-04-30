@@ -27,7 +27,7 @@ def homework_detail(request, studyrecord_id):
                 studyrecord_id=studyrecord_obj.id
                 )
     if not os.path.isdir(homework_path):
-        os.makedirs(homework_path, exist_ok=True)
+        os.makedirs(homework_path)
 
     if request.method == "POST":
         print(request.FILES)

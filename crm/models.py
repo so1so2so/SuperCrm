@@ -9,10 +9,12 @@ from django.contrib.auth.models import (
 from django.contrib.auth.models import PermissionsMixin
 from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
+
+
 # Create your models here.
 class Customer(models.Model):
     """客户信息表"""
-    name = models.CharField(max_length=32, blank=True, null=True,help_text="请输入姓名")
+    name = models.CharField(max_length=32, blank=True, null=True, help_text="请输入姓名")
     qq = models.CharField(max_length=64, unique=True)
     qq_name = models.CharField(max_length=64, blank=True, null=True)
     phone = models.CharField(max_length=64, blank=True, null=True)
@@ -25,7 +27,7 @@ class Customer(models.Model):
                       (6, '市场推广')
                       )
     # SmallIntegerField 小整数
-    source = models.SmallIntegerField(choices=source_choices,verbose_name="客户来源方式")
+    source = models.SmallIntegerField(choices=source_choices, verbose_name="客户来源方式")
     referral_from = models.CharField(verbose_name="转介绍人qq", max_length=64, blank=True, null=True)
     content = models.TextField(verbose_name="咨询详情")
     status_choices = ((0, '已报名'),
@@ -82,7 +84,7 @@ class CustomerFollowUp(models.Model):
 
 class Course(models.Model):
     """ 课程表 """
-    name = models.CharField(max_length=64, unique=True,verbose_name="课程名称")
+    name = models.CharField(max_length=64, unique=True, verbose_name="课程名称")
     price = models.PositiveSmallIntegerField(verbose_name="课程价格")
     period = models.PositiveSmallIntegerField(verbose_name="上课周期(月)")
     outline = models.TextField(verbose_name="课程大纲")
@@ -121,23 +123,27 @@ class ClassList(models.Model):
     branch = models.ForeignKey("Branch", verbose_name="校区")
     course = models.ForeignKey("Course")
     teachers = models.ManyToManyField("UserProfile")
-    contract = models.ForeignKey("ContractTemplate",blank=True,null=True)
+    contract = models.ForeignKey("ContractTemplate", blank=True, null=True)
+
     def __unicode__(self):
         return "%s %s 第%s期" % (self.branch, self.course, self.semester)
-        # return "zhang"
 
     class Meta:
         # 联合唯一
         unique_together = ('branch', 'course', 'semester')
         verbose_name_plural = "班级"
         verbose_name = "班级"
+
+
 class ContractTemplate(models.Model):
     '''合同模版'''
-    name = models.CharField("合同名称",max_length=64,unique=True)
+    name = models.CharField("合同名称", max_length=64, unique=True)
     template = models.TextField()
 
     def __unicode__(self):
         return self.name
+    class Meta:
+        verbose_name_plural = "合同管理"
 
 class CourseRecord(models.Model):
     """上课记录"""
@@ -182,10 +188,10 @@ class StudyRecord(models.Model):
     memo = models.TextField(blank=True, null=True)
     date = models.DateField(auto_now_add=True)
     course_record = models.ForeignKey("CourseRecord", verbose_name="课程名称")
-    student = models.ForeignKey("Enrollment",verbose_name="学生信息")
+    student = models.ForeignKey("Enrollment", verbose_name="学生信息")
 
     def __unicode__(self):
-        return "%s--%s--得分%s" %(self.student,self.course_record,self.score)
+        return "%s--%s--得分%s" % (self.student, self.course_record, self.score)
 
     class Meta:
         unique_together = ('student', 'course_record')
@@ -211,10 +217,10 @@ class Enrollment(models.Model):
 
 class Payment(models.Model):
     """缴费记录"""
-    customer = models.ForeignKey("Customer",verbose_name="客户名(qq)")
+    customer = models.ForeignKey("Customer", verbose_name="客户名(qq)")
     course = models.ForeignKey("Course", verbose_name="所报课程")
     amount = models.PositiveIntegerField(verbose_name="数额", default=500)
-    consultant = models.ForeignKey("UserProfile",verbose_name="销售")
+    consultant = models.ForeignKey("UserProfile", verbose_name="销售")
     date = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
@@ -299,7 +305,7 @@ class UserProfileManager(BaseUserManager):
         return user
 
 
-class UserProfile(AbstractBaseUser,PermissionsMixin):
+class UserProfile(AbstractBaseUser, PermissionsMixin):
     """账号表"""
     email = models.EmailField(
         verbose_name='email address',
@@ -307,13 +313,13 @@ class UserProfile(AbstractBaseUser,PermissionsMixin):
         unique=True,
         null=True
     )
-    password = models.CharField(_('password'), max_length=128,help_text=mark_safe("""<a href="password">修改密码</a>"""))
+    password = models.CharField(_('password'), max_length=128, help_text=mark_safe("""<a href="password">修改密码</a>"""))
     name = models.CharField(max_length=32)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     roles = models.ManyToManyField("Role", blank=True)
     objects = UserProfileManager()
-    stu_account = models.ForeignKey("Customer",verbose_name="关联学员账号",blank=True,null=True,
+    stu_account = models.ForeignKey("Customer", verbose_name="关联学员账号", blank=True, null=True,
                                     help_text="只有学员报名后方可为其创建账号")
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
