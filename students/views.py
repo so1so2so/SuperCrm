@@ -5,10 +5,11 @@ from django.shortcuts import render, HttpResponse
 from crm import models
 # Create your views here.
 from SuperCrm import settings
-
+from  crm.permissions import permission
 import time, os, json
 
 
+@permission.check_permission
 def stu_my_classes(request):
     return render(request, "students/my_classes.html")
 
