@@ -14,13 +14,14 @@ d_2 = {"crm": {"userprofile": "admin_class"}}
 from crm import models, forms
 from django.utils.timezone import datetime, timedelta
 from forms import create_model_form
-from crm.forms import EnrollForm,PaymentForm
+from crm.forms import EnrollForm, PaymentForm
 import os
 from SuperCrm import settings
+from newperssion.permissions import check_permission
 
 
 # Create your views here.
-@login_required
+# @login_required
 def index(request):
     # for i in range(20):
     #     models.Customer.objects.create(
@@ -41,6 +42,7 @@ def show_app(request, app_name):
     return HttpResponse("show_app")
 
 
+@check_permission
 def table_add(request, app_name, table_name):
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
     obj_all_model_and_display.is_add_form = True
@@ -58,6 +60,7 @@ def table_add(request, app_name, table_name):
             return render(request, "Myadmin/table_add.html", locals())
 
 
+@check_permission
 def table_edit(request, app_name, table_name, table_id):
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
     new_model_form = create_model_form(request, obj_all_model_and_display)
@@ -90,6 +93,7 @@ def table_edit(request, app_name, table_name, table_id):
             return render(request, "Myadmin/edit_table.html", locals())
 
 
+@check_permission
 def table_delete(request, app_name, table_name, table_id):
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
     # models.Customer.objects.filter(id=1)
@@ -128,9 +132,10 @@ def table_filter(request, admin_class):
         admin_class.ordering or '-id'), filter_conditions
 
 
+@check_permission
 def show_table(request, app_name, table_name):
     # 拿到admin_class对象
-    print request.user.name
+    # print request.user.name
     obj_all_model_and_display = myadmin.enable_admins[app_name][table_name]
     # 拿到model对象
     all_obj_django = obj_all_model_and_display.model.objects.all()
@@ -205,7 +210,7 @@ def enrollment(request, app_name, table_name, table_id):
     new_model_form = create_model_form(request, obj_all_model_and_display)
     table_obj = obj_all_model_and_display.model.objects.get(id=table_id)
     next_links = {}
-    enroll_obj_id=table_obj.enrollment_set.all()[0].id
+    enroll_obj_id = table_obj.enrollment_set.all()[0].id
     if request.method == "POST":
         emMd = EnrollForm(request.POST)
         if emMd.is_valid():
@@ -220,7 +225,7 @@ def enrollment(request, app_name, table_name, table_id):
                 # next_link = 'http://localhost:8000/crm/customer/registration/{enroll_obj_id}/'
             except IntegrityError as e:
                 emMd.add_error("__all__", "该用户已报名")
-                enroll_obj_id=table_obj.enrollment_set.all()[0].id
+                enroll_obj_id = table_obj.enrollment_set.all()[0].id
                 next_links["msg"] = next_link.format(enroll_obj_id=enroll_obj_id)
                 # print eroll_obj
     else:
@@ -230,7 +235,7 @@ def enrollment(request, app_name, table_name, table_id):
 
 def stu_registration(request, app_name, table_name, table_id):
     enroll_obj = models.Enrollment.objects.get(id=table_id)
-    status=0
+    status = 0
     if request.method == "POST":
         if request.is_ajax():
             # (u'ajax post, ', <MultiValueDict: {u'file': [<InMemoryUploadedFile: BigShare_18038_19689_1075688650.jpg (image/jpeg)>]}>)
@@ -263,5 +268,3 @@ def stu_registration(request, app_name, table_name, table_id):
                   {"customer_form": customer_form,
                    "enroll_obj": enroll_obj,
                    "status": status})
-
-

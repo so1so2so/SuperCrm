@@ -121,7 +121,7 @@ class AdminCourseRecord(BaseAdmin):
     actions = ['make_published','delete_selected_objs',]
 
     def make_published(self, request, queryset):
-        print self, request, queryset
+        # print self, request, queryset
         if len(queryset) > 1:
             return HttpResponse("只能选择一个班级")
         new_obj_list=[]
